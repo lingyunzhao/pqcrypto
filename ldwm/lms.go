@@ -74,6 +74,7 @@ func (lmspriv *LMSPrivateKey) Public() (*LMSPublicKey, error) {
 	return lmspub, nil
 }
 
+// String serializes the private key and converts it to a hexadecimal string.
 func (lmspriv *LMSPrivateKey) String() string {
 	str := string(u32str(int(lmspriv.lmstypecode))) + string(u32str(int(lmspriv.otstypecode))) +
 		string(u32str(lmspriv.q)) + string(lmspriv.id) + string(lmspriv.skseed)
@@ -86,6 +87,7 @@ func (lmspriv *LMSPrivateKey) serialize() []byte {
 		u32str(lmspriv.q), lmspriv.id, lmspriv.skseed}, []byte(""))
 }
 
+// String serializes the public key and converts it to a hexadecimal string.
 func (lmspub *LMSPublicKey) String() string {
 	return fmt.Sprintf("%x", string(u32str(int(lmspub.lmstypecode)))+
 		string(u32str(int(lmspub.otstypecode)))+string(lmspub.id)+string(lmspub.t1))
@@ -170,7 +172,7 @@ func parseLMSPublicKey(key []byte) (*LMSPublicKey, error) {
 	return lmspub, nil
 }
 
-// Sign generates a LMS signature from a LMS private key and a message.
+// Sign generates a LMS signature from a LMS private key and a message, and updates the private key.
 func (lmspriv *LMSPrivateKey) Sign(message []byte) ([]byte, error) {
 	err := lmspriv.Validate()
 	if err != nil {

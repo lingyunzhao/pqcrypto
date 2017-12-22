@@ -35,15 +35,15 @@ func TestOTSKeyGeneration(t *testing.T) {
 		}
 
 		if otspriv.otstypecode != parsedpriv.otstypecode ||
-			!bytes.Equal(otspriv.I, parsedpriv.I) ||
+			!bytes.Equal(otspriv.id, parsedpriv.id) ||
 			!bytes.Equal(otspriv.x, parsedpriv.x) ||
 			otspriv.q != parsedpriv.q {
 			t.Errorf("parsed private key != private key w = %d", w)
 		}
 
 		if otspub.otstypecode != parsedpub.otstypecode ||
-			!bytes.Equal(otspub.I, parsedpub.I) ||
-			!bytes.Equal(otspub.K, parsedpub.K) ||
+			!bytes.Equal(otspub.id, parsedpub.id) ||
+			!bytes.Equal(otspub.k, parsedpub.k) ||
 			otspub.q != parsedpub.q {
 			t.Errorf("parsed public key != public key w = %d", w)
 		}

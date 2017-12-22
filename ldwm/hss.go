@@ -24,7 +24,7 @@ type HSSPublicKey struct {
 	lmspub *LMSPublicKey
 }
 
-// GenerateHSSPrivateKey generates a HSS private key.
+// GenerateHSSPrivateKey generates a HSS private key. The value of layer should satisfy 1 <= layer <= 8.
 func GenerateHSSPrivateKey(lmstypecode uint, otstypecode uint, layer int) (*HSSPrivateKey, error) {
 	if layer < 1 || layer > 8 {
 		return nil, errors.New("hss: layer should satisfy 1 <= layer <= 8")
@@ -48,6 +48,7 @@ func GenerateHSSPrivateKey(lmstypecode uint, otstypecode uint, layer int) (*HSSP
 	return hsspriv, nil
 }
 
+// String serializes the private key and converts it to a hexadecimal string.
 func (hsspriv *HSSPrivateKey) String() string {
 	str := string(u32str(hsspriv.layer))
 	for i := 0; i < hsspriv.layer-1; i++ {
@@ -110,6 +111,7 @@ func (hsspriv *HSSPrivateKey) Public() *HSSPublicKey {
 	return hsspub
 }
 
+// String serializes the public key and converts it to a hexadecimal string.
 func (hsspub *HSSPublicKey) String() string {
 	str := string(u32str(hsspub.layer)) + string(hsspub.lmspub.serialize())
 	return fmt.Sprintf("%x", str)
@@ -137,7 +139,7 @@ func ParseHSSPublicKey(keyhex string) (*HSSPublicKey, error) {
 	return hsspub, nil
 }
 
-// Sign generates an HSS signature for a message.
+// Sign generates an HSS signature for a message and updates the private key.
 func (hsspriv *HSSPrivateKey) Sign(message []byte) ([]byte, error) {
 	if len(hsspriv.lmspriv) != hsspriv.layer ||
 		len(hsspriv.lmspub) != hsspriv.layer ||

@@ -143,7 +143,7 @@ func (s *stack) update(n int, skseed []byte, I []byte, lmstypecode uint, otstype
 		otspriv, _ := generateOTSPrivateKey(otstypecode, s.leafidx, I, skseed)
 		otspub, _ := otspriv.Public()
 		lnd := new(node)
-		lnd.content = hash(bytes.Join([][]byte{I, u32str(powInt(2, h) + s.leafidx), u16str(dLEAF), otspub.K}, []byte("")))
+		lnd.content = hash(bytes.Join([][]byte{I, u32str(powInt(2, h) + s.leafidx), u16str(dLEAF), otspub.k}, []byte("")))
 		lnd.idx = s.leafidx
 		lnd.height = 0
 		s.push(lnd)

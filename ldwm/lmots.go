@@ -16,7 +16,7 @@ import (
 // A OTSPrivateKey represents a LM-OTS private key.
 type OTSPrivateKey struct {
 	otstypecode uint   // LM-OTS typecode
-	I           []byte // a 16-byte identifier for the LMS public/private key pair
+	id          []byte // a 16-byte identifier for the LMS public/private key pair
 
 	// In the LMS N-time signature scheme, each LM-OTS signature is associated with
 	// the leaf of a hash tree, and q is set to the leaf number.
@@ -32,7 +32,7 @@ type OTSPrivateKey struct {
 // A OTSPublicKey represents a LM-OTS public key.
 type OTSPublicKey struct {
 	otstypecode uint   // LM-OTS typecode
-	I           []byte // a 16-byte identifier for the LMS public/private key pair
+	id          []byte // a 16-byte identifier for the LMS public/private key pair
 
 	// In the LMS N-time signature scheme, each LM-OTS signature is associated with
 	// the leaf of a hash tree, and q is set to the leaf number.
@@ -40,7 +40,7 @@ type OTSPublicKey struct {
 	// this value SHOULD be set to the all-zero value.
 	q int
 
-	K []byte
+	k []byte
 }
 
 // GenerateOTSPrivateKey generates a LM-OTS private key.
@@ -73,8 +73,8 @@ func generateOTSPrivateKey(otstypecode uint, q int, I []byte, seed []byte) (*OTS
 	if len(I) != identifierLENGTH || len(seed) != hashLENGTH {
 		return nil, errors.New("lmots: invalid identifier I")
 	}
-	otspriv.I = make([]byte, identifierLENGTH)
-	copy(otspriv.I, I)
+	otspriv.id = make([]byte, identifierLENGTH)
+	copy(otspriv.id, I)
 	otspriv.seed = make([]byte, hashLENGTH)
 	copy(otspriv.seed, seed)
 
@@ -99,8 +99,8 @@ func (otspriv *OTSPrivateKey) Public() (*OTSPublicKey, error) {
 	}
 	otspub := new(OTSPublicKey)
 	otspub.otstypecode = otspriv.otstypecode
-	otspub.I = make([]byte, identifierLENGTH)
-	copy(otspub.I, otspriv.I)
+	otspub.id = make([]byte, identifierLENGTH)
+	copy(otspub.id, otspriv.id)
 	otspub.q = otspriv.q
 
 	n := otstypes[otspub.otstypecode].n
@@ -113,11 +113,11 @@ func (otspriv *OTSPrivateKey) Public() (*OTSPublicKey, error) {
 		tmp := make([]byte, n)
 		copy(tmp, otspriv.x[i*n:(i+1)*n])
 		for j := 0; j < int(powInt(2, w)-1); j++ {
-			tmp = hash(bytes.Join([][]byte{otspub.I, u32str(otspub.q), u16str(i), u8str(j), tmp}, []byte("")))
+			tmp = hash(bytes.Join([][]byte{otspub.id, u32str(otspub.q), u16str(i), u8str(j), tmp}, []byte("")))
 		}
 		copy(y[i*n:(i+1)*n], tmp)
 	}
-	otspub.K = hash(bytes.Join([][]byte{otspub.I, u32str(otspub.q), u16str(dPBLC), y}, []byte("")))
+	otspub.k = hash(bytes.Join([][]byte{otspub.id, u32str(otspub.q), u16str(dPBLC), y}, []byte("")))
 
 	return otspub, nil
 }
@@ -145,11 +145,11 @@ func ParseOTSPublicKey(keyhex string) (*OTSPublicKey, error) {
 		return nil, errors.New("lmots: (parse error) invalid LM-OTS public key")
 	}
 
-	otspub.I = make([]byte, identifierLENGTH)
-	copy(otspub.I, key[4:4+identifierLENGTH])
+	otspub.id = make([]byte, identifierLENGTH)
+	copy(otspub.id, key[4:4+identifierLENGTH])
 	otspub.q = strTou32(key[4+identifierLENGTH : 4+identifierLENGTH+4])
-	otspub.K = make([]byte, n)
-	copy(otspub.K, key[4+identifierLENGTH+4:])
+	otspub.k = make([]byte, n)
+	copy(otspub.k, key[4+identifierLENGTH+4:])
 
 	return otspub, nil
 }
@@ -177,29 +177,31 @@ func ParseOTSPrivateKey(keyhex string) (*OTSPrivateKey, error) {
 		return nil, errors.New("lmots: (parse error) invalid LM-OTS private key")
 	}
 
-	otspriv.I = make([]byte, identifierLENGTH)
-	copy(otspriv.I, key[4:4+identifierLENGTH])
+	otspriv.id = make([]byte, identifierLENGTH)
+	copy(otspriv.id, key[4:4+identifierLENGTH])
 	otspriv.q = strTou32(key[4+identifierLENGTH : 4+identifierLENGTH+4])
 	otspriv.seed = make([]byte, hashLENGTH)
 	copy(otspriv.seed, key[4+identifierLENGTH+4:])
 
 	otspriv.x = make([]byte, 0)
 	for i := 0; i < p; i++ {
-		tmp := hash(bytes.Join([][]byte{otspriv.I, u32str(otspriv.q), u16str(i), u8str(0xff), otspriv.seed}, []byte("")))
+		tmp := hash(bytes.Join([][]byte{otspriv.id, u32str(otspriv.q), u16str(i), u8str(0xff), otspriv.seed}, []byte("")))
 		otspriv.x = append(otspriv.x, tmp...)
 	}
 
 	return otspriv, nil
 }
 
+// String serializes the private key and converts it to a hexadecimal string.
 func (otspriv *OTSPrivateKey) String() string {
 	return fmt.Sprintf("%x", strings.Join([]string{string(u32str(int(otspriv.otstypecode))),
-		string(otspriv.I), string(u32str(otspriv.q)), string(otspriv.seed)}, ""))
+		string(otspriv.id), string(u32str(otspriv.q)), string(otspriv.seed)}, ""))
 }
 
+// String serializes the public key and converts it to a hexadecimal string.
 func (otspub *OTSPublicKey) String() string {
 	return fmt.Sprintf("%x", strings.Join([]string{string(u32str(int(otspub.otstypecode))),
-		string(otspub.I), string(u32str(otspub.q)), string(otspub.K)}, ""))
+		string(otspub.id), string(u32str(otspub.q)), string(otspub.k)}, ""))
 }
 
 // func (otspub *OTSPublicKey) serialize() []byte {
@@ -213,7 +215,7 @@ func (otspriv *OTSPrivateKey) Validate() error {
 	switch {
 	case otspriv.otstypecode > LMOTSSHA256N32W8:
 		return errors.New("lmots: invalid key params")
-	case len(otspriv.I) != 16:
+	case len(otspriv.id) != 16:
 		return errors.New("lmots: invalid identifier I")
 	case otspriv.q < 0:
 		return errors.New("lmots: invalid leaf number q")
@@ -232,11 +234,11 @@ func (otspub *OTSPublicKey) Validate() error {
 	switch {
 	case otspub.otstypecode > LMOTSSHA256N32W8:
 		return errors.New("lmots: invalid LM-OTS key params")
-	case len(otspub.I) != 16:
+	case len(otspub.id) != 16:
 		return errors.New("lmots: invalid identifier I")
 	case otspub.q < 0:
 		return errors.New("lmots: invalid leaf number q")
-	case len(otspub.K) != otstypes[otspub.otstypecode].n:
+	case len(otspub.k) != otstypes[otspub.otstypecode].n:
 		return errors.New("lmots: invalid LM-OTS private key")
 	}
 
@@ -261,14 +263,14 @@ func (otspriv *OTSPrivateKey) Sign(message []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	Q := hash(bytes.Join([][]byte{otspriv.I, u32str(otspriv.q), u16str(dMESG), C, message}, []byte("")))
+	Q := hash(bytes.Join([][]byte{otspriv.id, u32str(otspriv.q), u16str(dMESG), C, message}, []byte("")))
 	y := make([]byte, p*n)
 	for i := 0; i < p; i++ {
 		a := coef(append(Q, u16str(cksm(Q, w, n, ls))...), i, w)
 		tmp := make([]byte, n)
 		copy(tmp, otspriv.x[i*n:(i+1)*n])
 		for j := 0; j < a; j++ {
-			tmp = hash(bytes.Join([][]byte{otspriv.I, u32str(otspriv.q), u16str(i), u8str(j), tmp}, []byte("")))
+			tmp = hash(bytes.Join([][]byte{otspriv.id, u32str(otspriv.q), u16str(i), u8str(j), tmp}, []byte("")))
 		}
 		copy(y[i*n:(i+1)*n], tmp)
 	}
@@ -283,12 +285,12 @@ func (otspub *OTSPublicKey) Verify(message, otssign []byte) error {
 		return err
 	}
 
-	Kc, kcerr := otsKeyCandidate(message, otssign, otspub.otstypecode, otspub.I, otspub.q)
+	Kc, kcerr := otsKeyCandidate(message, otssign, otspub.otstypecode, otspub.id, otspub.q)
 	if kcerr != nil {
 		return kcerr
 	}
 
-	if !bytes.Equal(Kc, otspub.K) {
+	if !bytes.Equal(Kc, otspub.k) {
 		return errors.New("lmots: invalid LM-OTS signature")
 	}
 
