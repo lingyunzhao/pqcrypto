@@ -9,7 +9,7 @@ import (
 	"math"
 )
 
-// LM-OTS types
+// LM-OTS and LMS types
 const (
 	_ = iota
 	LMOTSSHA256N32W1

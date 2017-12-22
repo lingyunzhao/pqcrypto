@@ -10,10 +10,10 @@ import (
 )
 
 func TestLMSKeyGeneration(t *testing.T) {
-	// otstypecodes := []uint{1, 2, 3, 4}
-	// lmstypecodes := []uint{5, 6, 7, 8, 9}
-	otstypecodes := []uint{1, 2, 3, 4}
-	lmstypecodes := []uint{5, 6}
+	// otstypecodes := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
+	// lmstypecodes := []uint{LMSSHA256M32H5, LMSSHA256M32H10, LMSSHA256M32H15, LMSSHA256M32H20, LMSSHA256M32H25}
+	otstypecodes := []uint{LMOTSSHA256N32W1}
+	lmstypecodes := []uint{LMSSHA256M32H5}
 	for _, otstypecode := range otstypecodes {
 		for _, lmstypecode := range lmstypecodes {
 			lmspriv, priverr := GenerateLMSPrivateKey(lmstypecode, otstypecode)
@@ -25,64 +25,54 @@ func TestLMSKeyGeneration(t *testing.T) {
 			ParseLMSPrivateKey(lmspriv.String())
 			ParseLMSPublicKey(lmspub.String())
 
-			// lmspub, puberr := lmspriv.Public()
-			// if puberr != nil {
-			// 	t.Errorf("failed to generate the public key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
-			// }
-			//
-			// parsedpriv, ppriverr := ParseLMSPrivateKey(lmspriv.String())
-			// if ppriverr != nil {
-			// 	fmt.Printf(ppriverr.Error())
-			// 	t.Errorf("failed to parse a private key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
-			// }
-			//
-			// parsedpub, ppuberr := ParseLMSPublicKey(lmspub.String())
-			// if ppuberr != nil {
-			// 	t.Errorf("failed to parse a public key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
-			// }
-			//
-			// if !bytes.Equal([]byte(lmspriv.String()), []byte(parsedpriv.String())) {
-			// 	t.Errorf("parsed LMS private != LMS private key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
-			// }
-			//
-			// if !bytes.Equal([]byte(lmspub.String()), []byte(parsedpub.String())) {
-			// 	t.Errorf("parsed LMS public != LMS public key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
-			// }
+			lmspub, puberr := lmspriv.Public()
+			if puberr != nil {
+				t.Errorf("failed to generate the public key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
+			}
 
-			// fmt.Print(time.Now().Format(time.UnixDate), " | ")
-			// fmt.Println(len(parsedpriv.String()), parsedpub.String())
+			parsedpriv, ppriverr := ParseLMSPrivateKey(lmspriv.String())
+			if ppriverr != nil {
+				t.Errorf("failed to parse a private key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
+			}
+
+			parsedpub, ppuberr := ParseLMSPublicKey(lmspub.String())
+			if ppuberr != nil {
+				t.Errorf("failed to parse a public key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
+			}
+
+			if lmspriv.String() != parsedpriv.String() {
+				t.Errorf("parsed LMS private != LMS private key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
+			}
+
+			if lmspub.String() != parsedpub.String() {
+				t.Errorf("parsed LMS public != LMS public key when lmstypecode = %d, otstypecode = %d", lmstypecode, otstypecode)
+			}
 		}
 	}
 }
 
 func TestLMSSignandVerify(t *testing.T) {
-	// otstypecodes := []uint{1, 2, 3, 4}
-	// lmstypecodes := []uint{5, 6, 7, 8, 9}
-	otstypecodes := []uint{1, 2, 3, 4}
-	lmstypecodes := []uint{5, 6}
+	// otstypecodes := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
+	// lmstypecodes := []uint{LMSSHA256M32H5, LMSSHA256M32H10, LMSSHA256M32H15, LMSSHA256M32H20, LMSSHA256M32H25}
+	otstypecodes := []uint{LMOTSSHA256N32W1}
+	lmstypecodes := []uint{LMSSHA256M32H5}
 	for _, otstypecode := range otstypecodes {
 		for _, lmstypecode := range lmstypecodes {
 			lmspriv, _ := GenerateLMSPrivateKey(lmstypecode, otstypecode)
-			// lmspub, _ := lmspriv.Public()
-			// K0, _ := lmspriv.otspriv[0].Public()
-			// K1, _ := lmspriv.otspriv[1].Public()
-			// fmt.Printf("\nK = %x\nK = %x\n", K0.K, K1.K)
+			lmspub, _ := lmspriv.Public()
 			files, _ := ioutil.ReadDir("testdata")
-			for _, fi := range files {
-				message, _ := ioutil.ReadFile(fi.Name())
-				// otssign0, _ := lmspriv.otspriv[0].Sign(message)
-				// otssign1, _ := lmspriv.otspriv[1].Sign(message)
-				// fmt.Printf("\nK0: otssign = %x, otstype = %d, I = %x, q = %d\n", otssign0[len(otssign0)-10:], K0.otstypecode, K0.I[:10], K0.q)
-				// fmt.Printf("\nK1: otssign = %x, otstype = %d, I = %x, q = %d\n", otssign1[len(otssign1)-10:], K1.otstypecode, K1.I[:10], K1.q)
-				_, lmssignerr := lmspriv.Sign(message)
-				// lmssign, lmssignerr := lmspriv.Sign(message)
-				if lmssignerr != nil {
-					t.Errorf("lmssign error lmstypecode = %d, otstypecode = %d, file = %s", lmstypecode, otstypecode, fi.Name())
+			for i := 0; i < 10; i++ {
+				for _, fi := range files {
+					message, _ := ioutil.ReadFile(fi.Name())
+					lmssign, lmssignerr := lmspriv.Sign(message)
+					if lmssignerr != nil {
+						t.Errorf("lmssign error lmstypecode = %d, otstypecode = %d, file = %s", lmstypecode, otstypecode, fi.Name())
+					}
+					verifyerr := lmspub.Verify(message, lmssign)
+					if verifyerr != nil {
+						t.Errorf("verify error lmstypecode = %d, otstypecode = %d, file = %s", lmstypecode, otstypecode, fi.Name())
+					}
 				}
-				// verifyerr := lmspub.Verify(message, lmssign)
-				// if verifyerr != nil {
-				// 	t.Errorf("verify error lmstypecode = %d, otstypecode = %d, file = %s", lmstypecode, otstypecode, fi.Name())
-				// }
 			}
 		}
 	}

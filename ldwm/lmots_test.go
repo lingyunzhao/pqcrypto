@@ -11,7 +11,8 @@ import (
 )
 
 func TestOTSKeyGeneration(t *testing.T) {
-	ws := []uint{1, 2, 3, 4}
+	// ws := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
+	ws := []uint{LMOTSSHA256N32W1}
 	for _, w := range ws {
 		otspriv, priverr := GenerateOTSPrivateKey(w)
 		if priverr != nil {
@@ -20,7 +21,6 @@ func TestOTSKeyGeneration(t *testing.T) {
 
 		otspub, puberr := otspriv.Public()
 		if puberr != nil {
-			// fmt.Printf(puberr.Error())
 			t.Errorf("failed to generate the public key when w = %d", w)
 		}
 
@@ -29,7 +29,6 @@ func TestOTSKeyGeneration(t *testing.T) {
 			t.Errorf("failed to parse a private key when w = %d", w)
 		}
 
-		// fmt.Println(len(string(otspub.I)))
 		parsedpub, ppuberr := ParseOTSPublicKey(otspub.String())
 		if ppuberr != nil {
 			t.Errorf("failed to parse a public key when w = %d", w)
@@ -53,7 +52,8 @@ func TestOTSKeyGeneration(t *testing.T) {
 }
 
 func TestOTSSignandVerify(t *testing.T) {
-	ws := []uint{1, 2, 3, 4}
+	// ws := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
+	ws := []uint{LMOTSSHA256N32W1}
 	for _, w := range ws {
 		otspriv, _ := GenerateOTSPrivateKey(w)
 		otspub, _ := otspriv.Public()

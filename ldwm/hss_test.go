@@ -5,15 +5,17 @@
 package ldwm
 
 import (
-	"bytes"
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
 
 func TestHSSKeyGeneration(t *testing.T) {
-	otstypecodes := []uint{1, 2, 3, 4}
-	lmstypecodes := []uint{5}
-	Ls := []int{1, 3, 5, 7}
+	// otstypecodes := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
+	// lmstypecodes := []uint{LMSSHA256M32H5, LMSSHA256M32H10, LMSSHA256M32H15, LMSSHA256M32H20, LMSSHA256M32H25}
+	otstypecodes := []uint{LMOTSSHA256N32W1}
+	lmstypecodes := []uint{LMSSHA256M32H5}
+	Ls := []int{3}
 	for _, otstypecode := range otstypecodes {
 		for _, lmstypecode := range lmstypecodes {
 			for _, L := range Ls {
@@ -34,11 +36,13 @@ func TestHSSKeyGeneration(t *testing.T) {
 					t.Errorf("failed to parse a public key when lmstypecode = %d, otstypecode = %d, L = %d", lmstypecode, otstypecode, L)
 				}
 
-				if len(hsspriv.String()) != len(phsspriv.String()) {
-					t.Errorf("len(parsed HSS private) != len(HSS private key) when lmstypecode = %d, otstypecode = %d, L = %d", lmstypecode, otstypecode, L)
+				if hsspriv.String() != phsspriv.String() {
+					fmt.Println(hsspriv.String())
+					fmt.Println(phsspriv.String())
+					t.Errorf("parsed HSS private != HSS private key when lmstypecode = %d, otstypecode = %d, L = %d", lmstypecode, otstypecode, L)
 				}
 
-				if !bytes.Equal([]byte(hsspub.String()), []byte(phsspub.String())) {
+				if hsspub.String() != phsspub.String() {
 					t.Errorf("parsed HSS public != HSS public key when lmstypecode = %d, otstypecode = %d, L = %d", lmstypecode, otstypecode, L)
 				}
 			}
@@ -47,24 +51,28 @@ func TestHSSKeyGeneration(t *testing.T) {
 }
 
 func TestHSSSignandVerify(t *testing.T) {
-	otstypecodes := []uint{1, 2, 3, 4}
-	lmstypecodes := []uint{5}
-	Ls := []int{1, 3, 5, 7}
+	// otstypecodes := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
+	// lmstypecodes := []uint{LMSSHA256M32H5, LMSSHA256M32H10, LMSSHA256M32H15, LMSSHA256M32H20, LMSSHA256M32H25}
+	otstypecodes := []uint{LMOTSSHA256N32W1}
+	lmstypecodes := []uint{LMSSHA256M32H5}
+	Ls := []int{3}
 	for _, otstypecode := range otstypecodes {
 		for _, lmstypecode := range lmstypecodes {
 			for _, L := range Ls {
 				hsspriv, _ := GenerateHSSPrivateKey(lmstypecode, otstypecode, L)
+				hsspub := hsspriv.Public()
 				files, _ := ioutil.ReadDir("testdata")
-				for _, fi := range files {
-					message, _ := ioutil.ReadFile(fi.Name())
-					hsssign, hsssignerr := hsspriv.Sign(message)
-					if hsssignerr != nil {
-						t.Errorf("hsssign error lmstypecode = %d, otstypecode = %d, L = %d, file = %s", lmstypecode, otstypecode, L, fi.Name())
-					}
-					hsspub := hsspriv.Public()
-					verifyerr := hsspub.Verify(message, hsssign)
-					if verifyerr != nil {
-						t.Errorf("verify error lmstypecode = %d, otstypecode = %d, L = %d, file = %s", lmstypecode, otstypecode, L, fi.Name())
+				for i := 0; i < 10; i++ {
+					for _, fi := range files {
+						message, _ := ioutil.ReadFile(fi.Name())
+						hsssign, hsssignerr := hsspriv.Sign(message)
+						if hsssignerr != nil {
+							t.Errorf("hsssign error lmstypecode = %d, otstypecode = %d, L = %d, file = %s", lmstypecode, otstypecode, L, fi.Name())
+						}
+						verifyerr := hsspub.Verify(message, hsssign)
+						if verifyerr != nil {
+							t.Errorf("verify error lmstypecode = %d, otstypecode = %d, L = %d, file = %s", lmstypecode, otstypecode, L, fi.Name())
+						}
 					}
 				}
 			}

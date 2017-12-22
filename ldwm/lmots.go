@@ -122,7 +122,7 @@ func (otspriv *OTSPrivateKey) Public() (*OTSPublicKey, error) {
 	return otspub, nil
 }
 
-// ParseOTSPublicKey parses a LM-OTS public key in hexadecimal.
+// ParseOTSPublicKey parses a LM-OTS public key from a hexadecimal string.
 func ParseOTSPublicKey(keyhex string) (*OTSPublicKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
@@ -154,7 +154,7 @@ func ParseOTSPublicKey(keyhex string) (*OTSPublicKey, error) {
 	return otspub, nil
 }
 
-// ParseOTSPrivateKey parses a LM-OTS private key in hexadecimal.
+// ParseOTSPrivateKey parses a LM-OTS private key from a hexadecimal string.
 func ParseOTSPrivateKey(keyhex string) (*OTSPrivateKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
