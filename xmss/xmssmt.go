@@ -12,7 +12,7 @@ import (
 	"fmt"
 )
 
-// A MTSK represents an XMSS-MT private key.
+// A MTSK represents an XMSS^MT private key.
 type MTSK struct {
 	oid      uint
 	idx      uint64
@@ -40,20 +40,20 @@ func (mtsk *MTSK) String() string {
 	return fmt.Sprintf("%x", mtsk.serialize())
 }
 
-// ParseMTSK parses an XMSS-MT private key in hexadecimal.
+// ParseMTSK parses an XMSS^MT private key in hexadecimal.
 func ParseMTSK(sk string) (*MTSK, error) {
 	skbytes, err := hex.DecodeString(sk)
 	if err != nil {
 		return nil, err
 	}
 	if len(skbytes) < 4+8 {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 	}
 	mtsk := new(MTSK)
 	oid := strToUint(skbytes[:4])
 	skbytes = skbytes[4:]
 	if xmssmttypes[oid] == nil {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 	}
 	mtsk.oid = oid
 	mtsk.idx = strToUint64(skbytes[:8])
@@ -64,7 +64,7 @@ func ParseMTSK(sk string) (*MTSK, error) {
 	l := xmsstypes[xmssty].l
 	xh := xmsstypes[xmssty].h
 	if len(skbytes) < n+n+n {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 	}
 	mtsk.seed = make([]byte, n)
 	copy(mtsk.seed, skbytes[:n])
@@ -79,22 +79,22 @@ func ParseMTSK(sk string) (*MTSK, error) {
 	mtsk.xsk = make([]*SK, d)
 	for i := 0; i < d; i++ {
 		if len(skbytes) < 4 {
-			return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+			return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 		}
 		sklen := strToInt(skbytes[:4])
 		skbytes = skbytes[4:]
 		if len(skbytes) < sklen {
-			return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+			return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 		}
 		mtsk.xsk[i] = parseReducedSK(skbytes[:sklen], i, mtsk.skseed, mtsk.seed, mtsk.skprf, xmssty)
 		skbytes = skbytes[sklen:]
 		if mtsk.xsk[i] == nil {
-			return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+			return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 		}
 	}
 
 	if len(skbytes) != (xh+l)*n*(d-1) {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 	}
 
 	mtsk.chainsig = oneDto2D(skbytes, d-1, (xh+l)*n)
@@ -103,7 +103,7 @@ func ParseMTSK(sk string) (*MTSK, error) {
 	return mtsk, nil
 }
 
-// A MTPK represents an XMSS-MT public key.
+// A MTPK represents an XMSS^MT public key.
 type MTPK struct {
 	oid  uint
 	root []byte
@@ -119,7 +119,7 @@ func (mtpk *MTPK) String() string {
 	return fmt.Sprintf("%x", mtpk.serialize())
 }
 
-// ParseMTPK parses an XMSS-MT public key in hexadecimal.
+// ParseMTPK parses an XMSS^MT public key in hexadecimal.
 func ParseMTPK(pk string) (*MTPK, error) {
 	pkbytes, err := hex.DecodeString(pk)
 	if err != nil {
@@ -127,17 +127,17 @@ func ParseMTPK(pk string) (*MTPK, error) {
 	}
 
 	if len(pkbytes) < 4 {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT public key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT public key")
 	}
 
 	oid := strToUint(pkbytes[:4])
 	if xmssmttypes[oid] == nil {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT public key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT public key")
 	}
 	n := xmsstypes[oid].n
 
 	if len(pkbytes) != 4+n+n {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT public key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT public key")
 	}
 
 	mtpk := new(MTPK)
@@ -150,10 +150,10 @@ func ParseMTPK(pk string) (*MTPK, error) {
 	return mtpk, nil
 }
 
-// MTkeyGen generates an XMSS-MT key pair
+// MTkeyGen generates an XMSS^MT key pair
 func MTkeyGen(oid uint) (*MTSK, *MTPK, error) {
 	if xmssmttypes[oid] == nil {
-		return nil, nil, errors.New("xmssmt: invalid XMSS-MT type")
+		return nil, nil, errors.New("xmssmt: invalid XMSS^MT type")
 	}
 	mtsk := new(MTSK)
 
@@ -217,15 +217,15 @@ func (mtsk *MTSK) Public() *MTPK {
 	return xpk
 }
 
-// Sign generates an XMSS-MT signature and updates the XMSS-MT private key.
+// Sign generates an XMSS^MT signature and updates the XMSS^MT private key.
 func (mtsk *MTSK) Sign(message []byte) ([]byte, error) {
 	if xmssmttypes[mtsk.oid] == nil {
-		return nil, errors.New("xmss-mt: invalid XMSS-MT private key")
+		return nil, errors.New("xmss-mt: invalid XMSS^MT private key")
 	}
 	d := xmssmttypes[mtsk.oid].d
 	xh := xmsstypes[xmssmttypes[mtsk.oid].xmssty].h
 	if mtsk.xsk[d-1].mt.idx >= pow2(xh) {
-		return nil, errors.New("xmss-mt: attempted overuse of XMSS-MT private key")
+		return nil, errors.New("xmss-mt: attempted overuse of XMSS^MT private key")
 	}
 
 	i := 0
@@ -268,7 +268,7 @@ func (mtsk *MTSK) Sign(message []byte) ([]byte, error) {
 	return mtsig, nil
 }
 
-// Verify  an XMSS-MT signature using the corresponding XMSS-MT public key and a message.
+// Verify  an XMSS^MT signature using the corresponding XMSS^MT public key and a message.
 func (mtpk *MTPK) Verify(message, mtsig []byte) bool {
 	if xmsstypes[mtpk.oid] == nil {
 		return false
