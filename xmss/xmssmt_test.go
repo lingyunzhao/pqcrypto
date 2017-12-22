@@ -5,10 +5,8 @@
 package xmss
 
 import (
-	// "crypto/rand"
 	"crypto/rand"
 	"testing"
-	// "fmt"
 )
 
 func TestXMSSMT(t *testing.T) {
@@ -20,7 +18,7 @@ func TestXMSSMT(t *testing.T) {
 		XMSSMTSHAKEH40D8W256, XMSSMTSHAKEH60D3W256, XMSSMTSHAKEH60D6W256, XMSSMTSHAKEH60D12W256,
 		XMSSMTSHAKEH20D2W512, XMSSMTSHAKEH20D4W512, XMSSMTSHAKEH40D2W512, XMSSMTSHAKEH40D4W512,
 		XMSSMTSHAKEH40D8W512, XMSSMTSHAKEH60D3W512, XMSSMTSHAKEH60D6W512, XMSSMTSHAKEH60D12W512}
-	for i := 0; i < len(xmssmttys[:2]); i++ {
+	for i := 0; i < len(xmssmttys[1:2]); i++ {
 		mtsk, mtpk, kerr := MTkeyGen(xmssmttys[i])
 		if kerr != nil {
 			t.Errorf("failed to generate key pair when XMSS-MT types = %x", xmssmttys[i])
@@ -40,14 +38,12 @@ func TestXMSSMT(t *testing.T) {
 			}
 		}
 		smtsk, serr := ParseMTSK(mtsk.String())
-		// _, serr := ParseSK(xsk.String())
 		if serr != nil {
 			t.Errorf("failed to parse private key when XMSS-MT types = %x", xmssmttys[i])
 		}
 		if smtsk.String() != mtsk.String() {
 			t.Errorf("parsed xsk != xsk when XMSS-MT types = %x", xmssmttys[i])
 		}
-		// fmt.Println(len(xsk.String()), len(sxsk.String()))
 		smtpk, perr := ParseMTPK(mtpk.String())
 		if perr != nil {
 			t.Errorf("failed to parse public key when XMSS-MT types = %x", xmssmttys[i])

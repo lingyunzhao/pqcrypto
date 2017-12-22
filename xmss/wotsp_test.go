@@ -7,19 +7,18 @@ package xmss
 import (
 	"crypto/rand"
 	"testing"
-        // "fmt"
 )
 
 func TestWOTSP(t *testing.T) {
-	wotsptys := []uint{WOTSPSHA2W256, WOTSPSHA2W512, WOTSPSHAKE256, WOTSPSHAKE512}
+	wotsptys := []uint{wotspsha2w256, wotspsha2w512, wotspshake256, wotspshake512}
 	for i := 0; i < len(wotsptys); i++ {
-                skseed := make([]byte, wotsptypes[wotsptys[i]].n)
-        	rand.Read(skseed)
-		wsk, _ := wotspGenSK(skseed,wotsptys[i])
+		skseed := make([]byte, wotsptypes[wotsptys[i]].n)
+		rand.Read(skseed)
+		wsk, _ := wotspGenSK(skseed, wotsptys[i])
 		adrs := make([]byte, addrlen)
 		msg := make([]byte, 64)
 		rand.Read(adrs)
-                rand.Read(msg)
+		rand.Read(msg)
 		seed := make([]byte, wotsptypes[wotsptys[i]].n)
 		rand.Read(seed)
 		wpk := wsk.wotspGenPK(adrs, seed)

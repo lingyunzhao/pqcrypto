@@ -25,10 +25,6 @@ type wotsppk struct {
 
 // wotspGenSK generates a WOTS+ private key.
 func wotspGenSK(seed []byte, wotspty uint) (*wotspsk, error) {
-	// if wotspty < WOTSPSHA2W256 || wotspty > WOTSPSHAKE512 {
-	// 	return nil, errors.New("wotsp: invalid WOTS+ type")
-	// }
-	// n := wotsptypes[wotspty].n
 	if wotsptypes[wotspty] == nil {
 		return nil, errors.New("wotsp: invalid WOTS+ type")
 	}
@@ -127,6 +123,5 @@ func sigortmppk(message []byte, adrs address, seed []byte, sigorsk [][]byte, wot
 		}
 	}
 	set(adrs, 0, chainaddr)
-	// fmt.Printf("%x\n", adrs)
 	return sigortmppk
 }

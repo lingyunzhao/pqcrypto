@@ -15,18 +15,18 @@ import (
 
 // XMSS address types
 const (
-	OTS = iota
-	LTREE
-	HASHTREE
+	otsAddr = iota
+	ltreeAddr
+	hashtreeAddr
 )
 
 // WOTS+ types
 const (
 	_             = iota
-	WOTSPSHA2W256 = 0x01000000*iota + iota
-	WOTSPSHA2W512
-	WOTSPSHAKE256
-	WOTSPSHAKE512
+	wotspsha2w256 = 0x01000000*iota + iota
+	wotspsha2w512
+	wotspshake256
+	wotspshake512
 )
 
 // XMSS types
@@ -95,10 +95,10 @@ type wotsptype struct {
 
 var wotsptypes = map[uint]*wotsptype{
 	//                     F/PRF     n   w  len
-	uint(WOTSPSHA2W256): {SHA2W256, 32, 16, 67},
-	uint(WOTSPSHA2W512): {SHA2W512, 64, 16, 131},
-	uint(WOTSPSHAKE256): {SHAKE128, 32, 16, 67},
-	uint(WOTSPSHAKE512): {SHAKE256, 64, 16, 131},
+	uint(wotspsha2w256): {sha2w256, 32, 16, 67},
+	uint(wotspsha2w512): {sha2w512, 64, 16, 131},
+	uint(wotspshake256): {shake128, 32, 16, 67},
+	uint(wotspshake512): {shake256, 64, 16, 131},
 }
 
 type xmsstype struct {
@@ -111,22 +111,22 @@ type xmsstype struct {
 
 var xmsstypes = map[uint]*xmsstype{
 	//         Name        Functions   n   w  len  h
-	uint(XMSSSHA2H10W256):  {SHA2W256, 32, 16, 67, 10},
-	uint(XMSSSHA2H16W256):  {SHA2W256, 32, 16, 67, 16},
-	uint(XMSSSHA2H20W256):  {SHA2W256, 32, 16, 67, 20},
-	uint(XMSSSHA2H10W512):  {SHA2W512, 64, 16, 131, 10},
-	uint(XMSSSHA2H16W512):  {SHA2W512, 64, 16, 131, 16},
-	uint(XMSSSHA2H20W512):  {SHA2W512, 64, 16, 131, 20},
-	uint(XMSSSHAKEH10W256): {SHAKE128, 32, 16, 67, 10},
-	uint(XMSSSHAKEH16W256): {SHAKE128, 32, 16, 67, 16},
-	uint(XMSSSHAKEH20W256): {SHAKE128, 32, 16, 67, 20},
-	uint(XMSSSHAKEH10W512): {SHAKE256, 64, 16, 131, 10},
-	uint(XMSSSHAKEH16W512): {SHAKE256, 64, 16, 131, 16},
-	uint(XMSSSHAKEH20W512): {SHAKE256, 64, 16, 131, 20},
-	uint(xmssSHA2H5W256):   {SHA2W256, 32, 16, 67, 5},
-	uint(xmssSHA2H5W512):   {SHA2W512, 64, 16, 131, 5},
-	uint(xmssSHAKEH5W256):  {SHAKE128, 32, 16, 67, 5},
-	uint(xmssSHAKEH5W512):  {SHAKE256, 64, 16, 131, 5},
+	uint(XMSSSHA2H10W256):  {sha2w256, 32, 16, 67, 10},
+	uint(XMSSSHA2H16W256):  {sha2w256, 32, 16, 67, 16},
+	uint(XMSSSHA2H20W256):  {sha2w256, 32, 16, 67, 20},
+	uint(XMSSSHA2H10W512):  {sha2w512, 64, 16, 131, 10},
+	uint(XMSSSHA2H16W512):  {sha2w512, 64, 16, 131, 16},
+	uint(XMSSSHA2H20W512):  {sha2w512, 64, 16, 131, 20},
+	uint(XMSSSHAKEH10W256): {shake128, 32, 16, 67, 10},
+	uint(XMSSSHAKEH16W256): {shake128, 32, 16, 67, 16},
+	uint(XMSSSHAKEH20W256): {shake128, 32, 16, 67, 20},
+	uint(XMSSSHAKEH10W512): {shake256, 64, 16, 131, 10},
+	uint(XMSSSHAKEH16W512): {shake256, 64, 16, 131, 16},
+	uint(XMSSSHAKEH20W512): {shake256, 64, 16, 131, 20},
+	uint(xmssSHA2H5W256):   {sha2w256, 32, 16, 67, 5},
+	uint(xmssSHA2H5W512):   {sha2w512, 64, 16, 131, 5},
+	uint(xmssSHAKEH5W256):  {shake128, 32, 16, 67, 5},
+	uint(xmssSHAKEH5W512):  {shake256, 64, 16, 131, 5},
 }
 
 type xmssmttype struct {
@@ -172,10 +172,10 @@ var xmssmttypes = map[uint]*xmssmttype{
 
 // Hash types
 const (
-	SHA2W256 = iota
-	SHA2W512
-	SHAKE128
-	SHAKE256
+	sha2w256 = iota
+	sha2w512
+	shake128
+	shake256
 )
 
 // Function types
@@ -193,17 +193,17 @@ const (
 
 func fn(message []byte, key []byte, hsty int, fnty int) []byte {
 	switch hsty {
-	case SHA2W256:
+	case sha2w256:
 		digest := sha256.Sum256(bytes.Join([][]byte{toByte(uint64(fnty), 32), key, message}, []byte("")))
 		return digest[:]
-	case SHA2W512:
+	case sha2w512:
 		digest := sha512.Sum512(bytes.Join([][]byte{toByte(uint64(fnty), 64), key, message}, []byte("")))
 		return digest[:]
-	case SHAKE128:
+	case shake128:
 		digest := make([]byte, 16)
 		sha3.ShakeSum128(digest, bytes.Join([][]byte{toByte(uint64(fnty), 32), key, message}, []byte("")))
 		return digest
-	case SHAKE256:
+	case shake256:
 		digest := make([]byte, 16)
 		sha3.ShakeSum256(digest, bytes.Join([][]byte{toByte(uint64(fnty), 64), key, message}, []byte("")))
 		return digest
@@ -307,7 +307,6 @@ func set(adrs address, value int64, member int) {
 func get(adrs address, member int) int64 {
 	value := int64(0)
 	var str []byte
-	// str := make([]byte, 0)
 	switch member {
 	case treeaddr:
 		str = adrs[member : member+8]
@@ -354,13 +353,13 @@ func strToUint64(str []byte) uint64 {
 func xmsstowotsp(xmssty uint) uint {
 	switch xmssty {
 	case XMSSSHA2H10W256, XMSSSHA2H16W256, XMSSSHA2H20W256, xmssSHA2H5W256:
-		return WOTSPSHA2W256
+		return wotspsha2w256
 	case XMSSSHA2H10W512, XMSSSHA2H16W512, XMSSSHA2H20W512, xmssSHA2H5W512:
-		return WOTSPSHA2W512
+		return wotspsha2w512
 	case XMSSSHAKEH10W256, XMSSSHAKEH16W256, XMSSSHAKEH20W256, xmssSHAKEH5W256:
-		return WOTSPSHAKE256
+		return wotspshake256
 	case XMSSSHAKEH10W512, XMSSSHAKEH16W512, XMSSSHAKEH20W512, xmssSHAKEH5W512:
-		return WOTSPSHAKE512
+		return wotspshake512
 	}
 	return 0
 }
