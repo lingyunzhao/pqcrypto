@@ -12,7 +12,7 @@ import (
 	"fmt"
 )
 
-// A LMSPrivateKey represents a LMS private key.
+// A LMSPrivateKey represents an LMS private key.
 type LMSPrivateKey struct {
 	height      int
 	q           int
@@ -25,7 +25,7 @@ type LMSPrivateKey struct {
 	stacks      []*stack
 }
 
-// A LMSPublicKey represents a LMS public key.
+// A LMSPublicKey represents an LMS public key.
 type LMSPublicKey struct {
 	lmstypecode uint   //LMS typecode
 	otstypecode uint   //LM-OTS typecode
@@ -33,7 +33,7 @@ type LMSPublicKey struct {
 	t1          []byte
 }
 
-// GenerateLMSPrivateKey generates a LMS private key.
+// GenerateLMSPrivateKey generates an LMS private key.
 func GenerateLMSPrivateKey(lmstypecode uint, otstypecode uint) (*LMSPrivateKey, error) {
 	if lmstypecode < LMSSHA256M32H5 || lmstypecode > LMSSHA256M32H25 {
 		return nil, errors.New("lms: invalid LMS typecode")
@@ -98,7 +98,7 @@ func (lmspub *LMSPublicKey) serialize() []byte {
 		u32str(int(lmspub.otstypecode)), lmspub.id, lmspub.t1}, []byte(""))
 }
 
-// ParseLMSPrivateKey parses a LMS private key from a hexadecimal string.
+// ParseLMSPrivateKey parses an LMS private key from a hexadecimal string.
 func ParseLMSPrivateKey(keyhex string) (*LMSPrivateKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
@@ -140,7 +140,7 @@ func parseLMSPrivateKey(key []byte) (*LMSPrivateKey, error) {
 	return lmspriv, nil
 }
 
-// ParseLMSPublicKey parses a LMS public key from a hexadecimal string.
+// ParseLMSPublicKey parses an LMS public key from a hexadecimal string.
 func ParseLMSPublicKey(keyhex string) (*LMSPublicKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
@@ -172,7 +172,7 @@ func parseLMSPublicKey(key []byte) (*LMSPublicKey, error) {
 	return lmspub, nil
 }
 
-// Sign generates a LMS signature from a LMS private key and a message, and updates the private key.
+// Sign generates an LMS signature from an LMS private key and a message, and updates the private key.
 func (lmspriv *LMSPrivateKey) Sign(message []byte) ([]byte, error) {
 	err := lmspriv.Validate()
 	if err != nil {

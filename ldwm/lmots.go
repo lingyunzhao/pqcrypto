@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-// A OTSPrivateKey represents a LM-OTS private key.
+// A OTSPrivateKey represents an LM-OTS private key.
 type OTSPrivateKey struct {
 	otstypecode uint   // LM-OTS typecode
 	id          []byte // a 16-byte identifier for the LMS public/private key pair
@@ -29,7 +29,7 @@ type OTSPrivateKey struct {
 	x []byte // p n-byte strings
 }
 
-// A OTSPublicKey represents a LM-OTS public key.
+// A OTSPublicKey represents an LM-OTS public key.
 type OTSPublicKey struct {
 	otstypecode uint   // LM-OTS typecode
 	id          []byte // a 16-byte identifier for the LMS public/private key pair
@@ -43,7 +43,7 @@ type OTSPublicKey struct {
 	k []byte
 }
 
-// GenerateOTSPrivateKey generates a LM-OTS private key.
+// GenerateOTSPrivateKey generates an LM-OTS private key.
 func GenerateOTSPrivateKey(otstypecode uint) (*OTSPrivateKey, error) {
 	I := make([]byte, identifierLENGTH)
 	_, err := rand.Read(I)
@@ -122,7 +122,7 @@ func (otspriv *OTSPrivateKey) Public() (*OTSPublicKey, error) {
 	return otspub, nil
 }
 
-// ParseOTSPublicKey parses a LM-OTS public key from a hexadecimal string.
+// ParseOTSPublicKey parses an LM-OTS public key from a hexadecimal string.
 func ParseOTSPublicKey(keyhex string) (*OTSPublicKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
@@ -154,7 +154,7 @@ func ParseOTSPublicKey(keyhex string) (*OTSPublicKey, error) {
 	return otspub, nil
 }
 
-// ParseOTSPrivateKey parses a LM-OTS private key from a hexadecimal string.
+// ParseOTSPrivateKey parses an LM-OTS private key from a hexadecimal string.
 func ParseOTSPrivateKey(keyhex string) (*OTSPrivateKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
@@ -245,7 +245,7 @@ func (otspub *OTSPublicKey) Validate() error {
 	return nil
 }
 
-// Sign generates a One Time Signature from a LM-OTS private key and a message.
+// Sign generates a One Time Signature from an LM-OTS private key and a message.
 func (otspriv *OTSPrivateKey) Sign(message []byte) ([]byte, error) {
 	err := otspriv.Validate()
 	if err != nil {
@@ -297,7 +297,7 @@ func (otspub *OTSPublicKey) Verify(message, otssign []byte) error {
 	return nil
 }
 
-// Computing a LM-OTS public key candidate Kc from a LM-OTS message, signature, otstypecode, identifier and q.
+// Computing an LM-OTS public key candidate Kc from an LM-OTS message, signature, otstypecode, identifier and q.
 func otsKeyCandidate(message []byte, otssign []byte, otstypecode uint, I []byte, q int) ([]byte, error) {
 	if len(otssign) < 4 {
 		return nil, errors.New("lmots: invalid LM-OTS signature")

@@ -10,7 +10,7 @@ import (
 	"fmt"
 )
 
-// A HSSPrivateKey represents a HSS private key.
+// A HSSPrivateKey represents an HSS private key.
 type HSSPrivateKey struct {
 	layer   int
 	lmspriv []*LMSPrivateKey
@@ -18,13 +18,13 @@ type HSSPrivateKey struct {
 	lmssign [][]byte
 }
 
-// A HSSPublicKey represents a HSS private key.
+// A HSSPublicKey represents an HSS private key.
 type HSSPublicKey struct {
 	layer  int
 	lmspub *LMSPublicKey
 }
 
-// GenerateHSSPrivateKey generates a HSS private key. The value of layer should satisfy 1 <= layer <= 8.
+// GenerateHSSPrivateKey generates an HSS private key. The value of layer should satisfy 1 <= layer <= 8.
 func GenerateHSSPrivateKey(lmstypecode uint, otstypecode uint, layer int) (*HSSPrivateKey, error) {
 	if layer < 1 || layer > 8 {
 		return nil, errors.New("hss: layer should satisfy 1 <= layer <= 8")
@@ -60,7 +60,7 @@ func (hsspriv *HSSPrivateKey) String() string {
 	return fmt.Sprintf("%x", str)
 }
 
-// ParseHSSPrivateKey parses a HSS private key from a hexadecimal string.
+// ParseHSSPrivateKey parses an HSS private key from a hexadecimal string.
 func ParseHSSPrivateKey(keyhex string) (*HSSPrivateKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
@@ -117,7 +117,7 @@ func (hsspub *HSSPublicKey) String() string {
 	return fmt.Sprintf("%x", str)
 }
 
-// ParseHSSPublicKey parses a HSS public key from a hexadecimal string.
+// ParseHSSPublicKey parses an HSS public key from a hexadecimal string.
 func ParseHSSPublicKey(keyhex string) (*HSSPublicKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {

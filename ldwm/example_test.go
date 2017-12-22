@@ -14,7 +14,7 @@ func Example() {
 
 	// *************************************** LM-OTS ***************************************
 
-	// generates a LM-OTS private key with the type LMOTSSHA256N32W1
+	// generates an LM-OTS private key with the type LMOTSSHA256N32W1
 	lmotspriv, operr := GenerateOTSPrivateKey(LMOTSSHA256N32W1)
 	if operr != nil {
 		panic(operr)
@@ -24,18 +24,18 @@ func Example() {
 	if oserr != nil {
 		panic(oserr)
 	}
-	// generate a LM-OTS signature
+	// generate an LM-OTS signature
 	lmotssig, osigerr := lmotspriv.Sign(message)
 	if osigerr != nil {
 		panic(osigerr)
 	}
-	// verify a LM-OTS signature
+	// verify an LM-OTS signature
 	overr := lmotspub.Verify(message, lmotssig)
 	fmt.Println(overr)
 
 	// ***************************************  LMS  ****************************************
 
-	// generates a LMS private key with the types LMSSHA256M32H5 and LMOTSSHA256N32W1
+	// generates an LMS private key with the types LMSSHA256M32H5 and LMOTSSHA256N32W1
 	lmspriv, lperr := GenerateLMSPrivateKey(LMSSHA256M32H5, LMOTSSHA256N32W1)
 	if lperr != nil {
 		panic(lperr)
@@ -45,12 +45,12 @@ func Example() {
 	if lserr != nil {
 		panic(lserr)
 	}
-	// generate a LMS signature
+	// generate an LMS signature
 	lmssig, lsigerr := lmspriv.Sign(message)
 	if lsigerr != nil {
 		panic(lsigerr)
 	}
-	// verify a LMS signature
+	// verify an LMS signature
 	lverr := lmspub.Verify(message, lmssig)
 	fmt.Println(lverr)
 
@@ -63,12 +63,12 @@ func Example() {
 	}
 	// get the corresponding public key of hsspriv
 	hsspub := hsspriv.Public()
-	// generate a HSS signature
+	// generate an HSS signature
 	hsssig, hsigerr := hsspriv.Sign(message)
 	if hsigerr != nil {
 		panic(hsigerr)
 	}
-	// verify a LMS signature
+	// verify an HSS signature
 	hverr := hsspub.Verify(message, hsssig)
 	fmt.Println(hverr)
 	// Output:
