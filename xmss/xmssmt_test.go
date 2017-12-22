@@ -21,7 +21,7 @@ func TestXMSSMT(t *testing.T) {
 	for i := 0; i < len(xmssmttys[1:2]); i++ {
 		mtsk, mtpk, kerr := MTkeyGen(xmssmttys[i])
 		if kerr != nil {
-			t.Errorf("failed to generate key pair when XMSS-MT types = %x", xmssmttys[i])
+			t.Errorf("failed to generate key pair when XMSS^MT types = %x", xmssmttys[i])
 		}
 		if mtsk.Public().String() != mtpk.String() {
 			t.Errorf("mtsk.Public() != mtpk when XMSS types = %x", xmssmttys[i])
@@ -31,22 +31,22 @@ func TestXMSSMT(t *testing.T) {
 			rand.Read(msg)
 			mtsig, serr := mtsk.Sign(msg)
 			if serr != nil {
-				t.Errorf("failed to sign when XMSS-MT types = %x, j = %d", xmssmttys[i], j)
+				t.Errorf("failed to sign when XMSS^MT types = %x, j = %d", xmssmttys[i], j)
 			}
 			if !mtpk.Verify(msg, mtsig) {
-				t.Errorf("invalid signature when XMSS-MT types = %x, j = %d", xmssmttys[i], j)
+				t.Errorf("invalid signature when XMSS^MT types = %x, j = %d", xmssmttys[i], j)
 			}
 		}
 		smtsk, serr := ParseMTSK(mtsk.String())
 		if serr != nil {
-			t.Errorf("failed to parse private key when XMSS-MT types = %x", xmssmttys[i])
+			t.Errorf("failed to parse private key when XMSS^MT types = %x", xmssmttys[i])
 		}
 		if smtsk.String() != mtsk.String() {
-			t.Errorf("parsed xsk != xsk when XMSS-MT types = %x", xmssmttys[i])
+			t.Errorf("parsed xsk != xsk when XMSS^MT types = %x", xmssmttys[i])
 		}
 		smtpk, perr := ParseMTPK(mtpk.String())
 		if perr != nil {
-			t.Errorf("failed to parse public key when XMSS-MT types = %x", xmssmttys[i])
+			t.Errorf("failed to parse public key when XMSS^MT types = %x", xmssmttys[i])
 		}
 		if smtpk.String() != mtpk.String() {
 			t.Errorf("parsed xpk != xpk when XMSS types = %x", xmssmttys[i])
@@ -56,7 +56,7 @@ func TestXMSSMT(t *testing.T) {
 			rand.Read(msg)
 			mtsig, _ := smtsk.Sign(msg)
 			if !smtpk.Verify(msg, mtsig) {
-				t.Errorf("invalid signature using parsed key pair when XMSS-MT types = %x, j = %d", xmssmttys[i], j)
+				t.Errorf("invalid signature using parsed key pair when XMSS^MT types = %x, j = %d", xmssmttys[i], j)
 			}
 		}
 	}

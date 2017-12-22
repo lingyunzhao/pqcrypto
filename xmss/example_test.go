@@ -28,19 +28,19 @@ func Example() {
 	xver := xpk.Verify(message, xsig)
 	fmt.Println(xver)
 
-	// *************************************** XMSS-MT ***************************************
+	// *************************************** XMSS^MT ***************************************
 
-	// generates an XMSS-MT key pair with the type XMSSMTSHA2H20D4W256
+	// generates an XMSS^MT key pair with the type XMSSMTSHA2H20D4W256
 	mtsk, mtpk, mkerr := MTkeyGen(XMSSMTSHA2H20D4W256)
 	if mkerr != nil {
 		panic(mkerr)
 	}
-	// generate an XMSS-MT signature
+	// generate an XMSS^MT signature
 	mtsig, mserr := mtsk.Sign(message)
 	if mserr != nil {
 		panic(mserr)
 	}
-	// verify an XMSS-MT signature
+	// verify an XMSS^MT signature
 	mver := mtpk.Verify(message, mtsig)
 	fmt.Println(mver)
 	// Output:
