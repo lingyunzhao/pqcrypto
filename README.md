@@ -15,7 +15,7 @@ See [Go  Doc](https://godoc.org/github.com/lingyunzhao/pqcrypto) or [Go Walker](
 
 ## Lamport-Diffie-Winternitz-Merkle (LDWM) scheme
 
-Standards: [draft-mcgrew-hash-sigs-08](https://datatracker.ietf.org/doc/draft-mcgrew-hash-sigs/)
+Standards: [draft-mcgrew-hash-sigs-10](https://datatracker.ietf.org/doc/draft-mcgrew-hash-sigs/)
 
 * LM-OTS One-Time Signatures
 * Leighton Micali Signatures
@@ -23,7 +23,7 @@ Standards: [draft-mcgrew-hash-sigs-08](https://datatracker.ietf.org/doc/draft-mc
 
 ## eXtended Merkle Signature Scheme (XMSS)
 
-Standards: [draft-irtf-cfrg-xmss-hash-based-signatures-10](https://datatracker.ietf.org/doc/draft-irtf-cfrg-xmss-hash-based-signatures/)
+Standards: [draft-irtf-cfrg-xmss-hash-based-signatures-12](https://datatracker.ietf.org/doc/draft-irtf-cfrg-xmss-hash-based-signatures/)
 
 * WOTS+ One-Time Signatures
 * XMSS: eXtended Merkle Signature Scheme
