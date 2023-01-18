@@ -12,257 +12,255 @@ import (
 	"fmt"
 )
 
-// A LMSPrivateKey represents an LMS private key.
-type LMSPrivateKey struct {
+// LMS private key.
+type LmsPrivateKey struct {
 	height      int
 	q           int
-	lmstypecode uint
-	otstypecode uint
+	lmsTypecode uint
+	otsTypecode uint
 	id          []byte
 	root        []byte
-	skseed      []byte
-	authpath    [][]byte
+	skSeed      []byte
+	authPath    [][]byte
 	stacks      []*stack
 }
 
-// A LMSPublicKey represents an LMS public key.
-type LMSPublicKey struct {
-	lmstypecode uint   //LMS typecode
-	otstypecode uint   //LM-OTS typecode
-	id          []byte // a 16-byte identifier for the LMS public/private key pair
-	t1          []byte
+// LMS public key.
+type LmsPublicKey struct {
+	//LMS typecode.
+	lmsTypecode uint
+	//LM-OTS typecode.
+	otsTypecode uint
+	// The 16-byte identifier of the LMS public/private key pair.
+	id []byte
+	t1 []byte
 }
 
-// GenerateLMSPrivateKey generates an LMS private key.
-func GenerateLMSPrivateKey(lmstypecode uint, otstypecode uint) (*LMSPrivateKey, error) {
-	if lmstypecode < LMSSHA256M32H5 || lmstypecode > LMSSHA256M32H25 {
+// Geenerates an LMS private key.
+func GenerateLmsPrivateKey(lmsTypecode uint, otsTypecode uint) (*LmsPrivateKey, error) {
+	if lmsTypecode < LMS_SHA256_M32_H5 || lmsTypecode > LMS_SHA256_M32_H25 {
 		return nil, errors.New("lms: invalid LMS typecode")
 	}
 
-	I := make([]byte, identifierLENGTH)
+	I := make([]byte, IdentifierLength)
 	_, err := rand.Read(I)
 	if err != nil {
 		return nil, err
 	}
 
-	skseed := make([]byte, hashLENGTH)
-	_, err = rand.Read(skseed)
+	skSeed := make([]byte, HashLength)
+	_, err = rand.Read(skSeed)
 	if err != nil {
 		return nil, err
 	}
 
-	return genMTree(I, skseed, lmstypecode, otstypecode), nil
+	return generateMerkleTree(I, skSeed, lmsTypecode, otsTypecode), nil
 }
 
-// Public generates the LMS public key.
-func (lmspriv *LMSPrivateKey) Public() (*LMSPublicKey, error) {
-	err := lmspriv.Validate()
+// Generates the LMS public key.
+func (lmsPriv *LmsPrivateKey) Public() (*LmsPublicKey, error) {
+	err := lmsPriv.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	m := lmstypes[lmspriv.lmstypecode].m
+	lmsPub := new(LmsPublicKey)
+	lmsPub.lmsTypecode = lmsPriv.lmsTypecode
+	lmsPub.otsTypecode = lmsPriv.otsTypecode
+	lmsPub.id = lmsPriv.id
+	lmsPub.t1 = lmsPriv.root
 
-	lmspub := new(LMSPublicKey)
-	lmspub.lmstypecode = lmspriv.lmstypecode
-	lmspub.otstypecode = lmspriv.otstypecode
-	lmspub.id = make([]byte, identifierLENGTH)
-	copy(lmspub.id, lmspriv.id)
-	lmspub.t1 = make([]byte, m)
-	copy(lmspub.t1, lmspriv.root)
-
-	return lmspub, nil
+	return lmsPub, nil
 }
 
-// String serializes the private key and converts it to a hexadecimal string.
-func (lmspriv *LMSPrivateKey) String() string {
-	str := string(u32str(int(lmspriv.lmstypecode))) + string(u32str(int(lmspriv.otstypecode))) +
-		string(u32str(lmspriv.q)) + string(lmspriv.id) + string(lmspriv.skseed)
+// Serializes the private key and converts it to a hexadecimal string.
+func (lmsPriv *LmsPrivateKey) String() string {
+	str := string(u32Str(int(lmsPriv.lmsTypecode))) + string(u32Str(int(lmsPriv.otsTypecode))) +
+		string(u32Str(lmsPriv.q)) + string(lmsPriv.id) + string(lmsPriv.skSeed)
 	str = fmt.Sprintf("%x", str)
 	return str
 }
 
-func (lmspriv *LMSPrivateKey) serialize() []byte {
-	return bytes.Join([][]byte{u32str(int(lmspriv.lmstypecode)), u32str(int(lmspriv.otstypecode)),
-		u32str(lmspriv.q), lmspriv.id, lmspriv.skseed}, []byte(""))
+func (lmsPriv *LmsPrivateKey) serialize() []byte {
+	return bytes.Join([][]byte{u32Str(int(lmsPriv.lmsTypecode)), u32Str(int(lmsPriv.otsTypecode)),
+		u32Str(lmsPriv.q), lmsPriv.id, lmsPriv.skSeed}, []byte(""))
 }
 
-// String serializes the public key and converts it to a hexadecimal string.
-func (lmspub *LMSPublicKey) String() string {
-	return fmt.Sprintf("%x", string(u32str(int(lmspub.lmstypecode)))+
-		string(u32str(int(lmspub.otstypecode)))+string(lmspub.id)+string(lmspub.t1))
+// Serializes the public key and converts it to a hexadecimal string.
+func (lmsPub *LmsPublicKey) String() string {
+	return fmt.Sprintf("%x", string(u32Str(int(lmsPub.lmsTypecode)))+
+		string(u32Str(int(lmsPub.otsTypecode)))+string(lmsPub.id)+string(lmsPub.t1))
 }
 
-func (lmspub *LMSPublicKey) serialize() []byte {
-	return bytes.Join([][]byte{u32str(int(lmspub.lmstypecode)),
-		u32str(int(lmspub.otstypecode)), lmspub.id, lmspub.t1}, []byte(""))
+func (lmsPub *LmsPublicKey) serialize() []byte {
+	return bytes.Join([][]byte{u32Str(int(lmsPub.lmsTypecode)),
+		u32Str(int(lmsPub.otsTypecode)), lmsPub.id, lmsPub.t1}, []byte(""))
 }
 
-// ParseLMSPrivateKey parses an LMS private key from a hexadecimal string.
-func ParseLMSPrivateKey(keyhex string) (*LMSPrivateKey, error) {
-	key, err := hex.DecodeString(keyhex)
+// Parses an LMS private key from a hexadecimal string.
+func ParseLmsPrivateKey(keyHex string) (*LmsPrivateKey, error) {
+	key, err := hex.DecodeString(keyHex)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseLMSPrivateKey(key)
+	return parseLmsPrivateKey(key)
 }
 
-func parseLMSPrivateKey(key []byte) (*LMSPrivateKey, error) {
+func parseLmsPrivateKey(key []byte) (*LmsPrivateKey, error) {
 
 	if len(key) < 8 {
 		return nil, errors.New("lms: (parse error) invalid LMS private key")
 	}
 
-	lmstypecode := uint(strTou32(key[:4]))
-	otstypecode := uint(strTou32(key[4:8]))
+	lmsTypecode := uint(strTou32(key[:4]))
+	otsTypecode := uint(strTou32(key[4:8]))
 
-	if len(key) != 4+4+4+identifierLENGTH+hashLENGTH {
+	if len(key) != 4+4+4+IdentifierLength+HashLength {
 		return nil, errors.New("lms: (parse error) invalid LMS private key")
 	}
 	q := strTou32(key[8:12])
-	if lmstypecode < LMSSHA256M32H5 ||
-		lmstypecode > LMSSHA256M32H25 ||
-		q < 0 || q >= powInt(2, lmstypes[lmstypecode].h) ||
-		otstypecode > LMOTSSHA256N32W8 {
+	if lmsTypecode < LMS_SHA256_M32_H5 ||
+		lmsTypecode > LMS_SHA256_M32_H25 ||
+		q < 0 || q >= powInt(2, lmsTypes[lmsTypecode].h) ||
+		otsTypecode > LMOTS_SHA256_N32_W8 {
 		return nil, errors.New("lms: (parse error) invalid LMS private key")
 	}
 
-	I := key[12 : 12+identifierLENGTH]
-	skseed := key[12+identifierLENGTH:]
+	I := key[12 : 12+IdentifierLength]
+	skSeed := key[12+IdentifierLength:]
 
-	lmspriv := genMTree(I, skseed, lmstypecode, otstypecode)
+	lmsPriv := generateMerkleTree(I, skSeed, lmsTypecode, otsTypecode)
 
 	for i := 0; i < q; i++ {
-		lmspriv.traversal()
+		lmsPriv.traversal()
 	}
 
-	return lmspriv, nil
+	return lmsPriv, nil
 }
 
-// ParseLMSPublicKey parses an LMS public key from a hexadecimal string.
-func ParseLMSPublicKey(keyhex string) (*LMSPublicKey, error) {
+// Parses an LMS public key from a hexadecimal string.
+func ParseLmsPublicKey(keyhex string) (*LmsPublicKey, error) {
 	key, err := hex.DecodeString(keyhex)
 	if err != nil {
 		return nil, err
 	}
 
-	return parseLMSPublicKey(key)
+	return parseLmsPublicKey(key)
 }
 
-func parseLMSPublicKey(key []byte) (*LMSPublicKey, error) {
+func parseLmsPublicKey(key []byte) (*LmsPublicKey, error) {
 
-	if len(key) <= 4+4+identifierLENGTH {
+	if len(key) <= 4+4+IdentifierLength {
 		return nil, errors.New("lms: (parse error) invalid LMS public key")
 	}
 
-	lmspub := new(LMSPublicKey)
-	lmspub.lmstypecode = uint(strTou32(key[:4]))
-	lmspub.otstypecode = uint(strTou32(key[4:8]))
-	lmspub.id = make([]byte, identifierLENGTH)
-	copy(lmspub.id, key[8:8+identifierLENGTH])
-	lmspub.t1 = make([]byte, len(key)-(8+identifierLENGTH))
-	copy(lmspub.t1, key[8+identifierLENGTH:])
+	lmsPub := new(LmsPublicKey)
+	lmsPub.lmsTypecode = uint(strTou32(key[:4]))
+	lmsPub.otsTypecode = uint(strTou32(key[4:8]))
+	lmsPub.id = key[8 : 8+IdentifierLength]
+	lmsPub.t1 = key[8+IdentifierLength:]
 
-	err := lmspub.Validate()
+	err := lmsPub.Validate()
 	if err != nil {
 		return nil, errors.New("lms: (parse error) invalid LMS public key")
 	}
 
-	return lmspub, nil
+	return lmsPub, nil
 }
 
-// Sign generates an LMS signature from an LMS private key and a message, and updates the private key.
-func (lmspriv *LMSPrivateKey) Sign(message []byte) ([]byte, error) {
-	err := lmspriv.Validate()
+// Generates an LMS signature from an LMS private key and a message, and updates the private key.
+func (lmsPriv *LmsPrivateKey) Sign(message []byte) ([]byte, error) {
+	err := lmsPriv.Validate()
 	if err != nil {
 		return nil, err
 	}
 
-	h := lmstypes[lmspriv.lmstypecode].h
-	m := lmstypes[lmspriv.lmstypecode].m
+	h := lmsTypes[lmsPriv.lmsTypecode].h
+	m := lmsTypes[lmsPriv.lmsTypecode].m
 
-	otspriv, _ := generateOTSPrivateKey(lmspriv.otstypecode, lmspriv.q, lmspriv.id, lmspriv.skseed)
-	otssign, signerr := otspriv.Sign(message)
-	if signerr != nil {
+	otsPriv, _ := generateOtsPrivateKey(lmsPriv.otsTypecode, lmsPriv.q, lmsPriv.id, lmsPriv.skSeed)
+	otsSig, sigErr := otsPriv.Sign(message)
+	if sigErr != nil {
 		return nil, err
 	}
 
 	path := make([]byte, h*m)
 	for i := 0; i < h; i++ {
-		copy(path[i*m:(i+1)*m], lmspriv.authpath[i])
+		copy(path[i*m:(i+1)*m], lmsPriv.authPath[i])
 	}
-	lmspriv.traversal()
+	lmsPriv.traversal()
 
-	return bytes.Join([][]byte{u32str(lmspriv.q - 1), otssign, u32str(int(lmspriv.lmstypecode)), path}, []byte("")), nil
+	return bytes.Join([][]byte{u32Str(lmsPriv.q - 1), otsSig, u32Str(int(lmsPriv.lmsTypecode)), path}, []byte("")), nil
 }
 
-// Verify verifies a message with its LMS signature.
-func (lmspub *LMSPublicKey) Verify(message, lmssign []byte) error {
-	err := lmspub.Validate()
+// Verifies a message with its LMS signature.
+func (lmsPub *LmsPublicKey) Verify(message, lmsSig []byte) error {
+	err := lmsPub.Validate()
 	if err != nil {
 		return err
 	}
 
-	Tc, tcerr := candidateLMSroot(message, lmssign, lmspub.id, lmspub.lmstypecode, lmspub.otstypecode)
-	if tcerr != nil {
-		return tcerr
+	tc, tcErr := candidateLmsRoot(message, lmsSig, lmsPub.id, lmsPub.lmsTypecode, lmsPub.otsTypecode)
+	if tcErr != nil {
+		return tcErr
 	}
 
-	if !bytes.Equal(Tc, lmspub.t1) {
+	if !bytes.Equal(tc, lmsPub.t1) {
 		return errors.New("lms: invalid LMS signature")
 	}
 
 	return nil
 }
 
-// Computing an LMS public key candidate from a message, signature, identifier, and algorithm typecodes.
-func candidateLMSroot(message []byte, lmssign []byte, I []byte, lmstypecode uint, otstypecode uint) ([]byte, error) {
-	if len(lmssign) < 8 {
+// Computes an LMS public key candidate from a message, signature, identifier, and algorithm typecodes.
+func candidateLmsRoot(message []byte, lmsSig []byte, I []byte, lmsTypecode uint, otsTypecode uint) ([]byte, error) {
+	if len(lmsSig) < 8 {
 		return nil, errors.New("lms: invalid LMS signature")
 	}
 
-	q := strTou32(lmssign[:4])
-	otssigntype := uint(strTou32(lmssign[4:8]))
-	if otssigntype != otstypecode {
+	q := strTou32(lmsSig[:4])
+	otsSigType := uint(strTou32(lmsSig[4:8]))
+	if otsSigType != otsTypecode {
 		return nil, errors.New("lms: invalid LMS signature")
 	}
 
-	n := otstypes[otssigntype].n
-	p := otstypes[otssigntype].p
+	n := otsTypes[otsSigType].n
+	p := otsTypes[otsSigType].p
 
-	if len(lmssign) < 12+n*(p+1) {
+	if len(lmsSig) < 12+n*(p+1) {
 		return nil, errors.New("lms: invalid LMS signature")
 	}
 
-	otssign := lmssign[4 : 8+n*(p+1)]
+	otsSig := lmsSig[4 : 8+n*(p+1)]
 
-	lmssigntype := uint(strTou32(lmssign[8+n*(p+1) : 12+n*(p+1)]))
-	if lmssigntype != lmstypecode {
+	lmsSigType := uint(strTou32(lmsSig[8+n*(p+1) : 12+n*(p+1)]))
+	if lmsSigType != lmsTypecode {
 		return nil, errors.New("lms: invalid LMS signature")
 	}
 
-	m := lmstypes[lmssigntype].m
-	h := lmstypes[lmssigntype].h
+	m := lmsTypes[lmsSigType].m
+	h := lmsTypes[lmsSigType].h
 
-	if q < 0 || q >= powInt(2, h) || len(lmssign) != 12+n*(p+1)+m*h {
+	if q < 0 || q >= powInt(2, h) || len(lmsSig) != 12+n*(p+1)+m*h {
 		return nil, errors.New("lms: invalid LMS signature")
 	}
 
-	path := lmssign[len(lmssign)-m*h:]
+	path := lmsSig[len(lmsSig)-m*h:]
 
-	Kc, err := otsKeyCandidate(message, otssign, otstypecode, I, q)
+	kc, err := otsKeyCandidate(message, otsSig, otsTypecode, I, q)
 	if err != nil {
 		return nil, err
 	}
 
 	node := powInt(2, h) + q
-	tmp := hash(bytes.Join([][]byte{I, u32str(node), u16str(dLEAF), Kc}, []byte("")))
+	hash := lmsTypes[lmsSigType].hash
+	tmp := hash(bytes.Join([][]byte{I, u32Str(node), u16Str(D_LEAF), kc}, []byte("")))
 	for i := 0; node > 1; i = i + 1 {
 		if node%2 == 1 {
-			tmp = hash(bytes.Join([][]byte{I, u32str(int(node / 2)), u16str(dINTR), path[i*m : (i+1)*m], tmp}, []byte("")))
+			tmp = hash(bytes.Join([][]byte{I, u32Str(int(node / 2)), u16Str(D_INTR), path[i*m : (i+1)*m], tmp}, []byte("")))
 		} else {
-			tmp = hash(bytes.Join([][]byte{I, u32str(int(node / 2)), u16str(dINTR), tmp, path[i*m : (i+1)*m]}, []byte("")))
+			tmp = hash(bytes.Join([][]byte{I, u32Str(int(node / 2)), u16Str(D_INTR), tmp, path[i*m : (i+1)*m]}, []byte("")))
 		}
 		node = int(node / 2)
 	}
@@ -270,27 +268,27 @@ func candidateLMSroot(message []byte, lmssign []byte, I []byte, lmstypecode uint
 	return tmp[:], nil
 }
 
-// Validate performs basic sanity checks on the LMS private key.
-// It returns nil if the LMS private key is valid, or else an error describing a problem.
-func (lmspriv *LMSPrivateKey) Validate() error {
-	if lmspriv.lmstypecode < LMSSHA256M32H5 ||
-		lmspriv.lmstypecode > LMSSHA256M32H25 ||
-		lmspriv.q < 0 || lmspriv.q >= powInt(2, lmstypes[lmspriv.lmstypecode].h) ||
-		len(lmspriv.skseed) != hashLENGTH ||
-		lmspriv.otstypecode > LMOTSSHA256N32W8 || len(lmspriv.id) != identifierLENGTH {
+// Performs basic sanity checks on the LMS private key.
+// Returns nil if the LMS private key is valid, or else an error describing a problem.
+func (lmsPriv *LmsPrivateKey) Validate() error {
+	if lmsPriv.lmsTypecode < LMS_SHA256_M32_H5 ||
+		lmsPriv.lmsTypecode > LMS_SHA256_M32_H25 ||
+		lmsPriv.q < 0 || lmsPriv.q >= powInt(2, lmsTypes[lmsPriv.lmsTypecode].h) ||
+		len(lmsPriv.skSeed) != HashLength ||
+		lmsPriv.otsTypecode > LMOTS_SHA256_N32_W8 || len(lmsPriv.id) != IdentifierLength {
 		return errors.New("lms: invalid LMS private key")
 	}
 	return nil
 }
 
-// Validate performs basic sanity checks on the LMS public key.
-// It returns nil if the LMS public key is valid, or else an error describing a problem.
-func (lmspub *LMSPublicKey) Validate() error {
-	if lmspub.lmstypecode < LMSSHA256M32H5 ||
-		lmspub.lmstypecode > LMSSHA256M32H25 ||
-		lmspub.otstypecode > LMOTSSHA256N32W8 ||
-		len(lmspub.id) != identifierLENGTH ||
-		len(lmspub.t1) != lmstypes[lmspub.lmstypecode].m {
+// Performs basic sanity checks on the LMS public key.
+// Returns nil if the LMS public key is valid, or else an error describing a problem.
+func (lmsPub *LmsPublicKey) Validate() error {
+	if lmsPub.lmsTypecode < LMS_SHA256_M32_H5 ||
+		lmsPub.lmsTypecode > LMS_SHA256_M32_H25 ||
+		lmsPub.otsTypecode > LMOTS_SHA256_N32_W8 ||
+		len(lmsPub.id) != IdentifierLength ||
+		len(lmsPub.t1) != lmsTypes[lmsPub.lmsTypecode].m {
 		return errors.New("lms: invalid LMS public key")
 	}
 	return nil

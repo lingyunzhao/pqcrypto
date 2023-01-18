@@ -10,62 +10,60 @@ import (
 	"testing"
 )
 
-func TestOTSKeyGeneration(t *testing.T) {
-	// ws := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
-	ws := []uint{LMOTSSHA256N32W1}
+func TestOtsKeyGeneration(t *testing.T) {
+	ws := []uint{LMOTS_SHA256_N32_W1, LMOTS_SHA256_N32_W2, LMOTS_SHA256_N32_W4, LMOTS_SHA256_N32_W8}
 	for _, w := range ws {
-		otspriv, priverr := GenerateOTSPrivateKey(w)
-		if priverr != nil {
+		otsPriv, privErr := GenerateOtsPrivateKey(w)
+		if privErr != nil {
 			t.Errorf("failed to generate a private key when w = %d", w)
 		}
 
-		otspub, puberr := otspriv.Public()
-		if puberr != nil {
+		otsPub, pubErr := otsPriv.Public()
+		if pubErr != nil {
 			t.Errorf("failed to generate the public key when w = %d", w)
 		}
 
-		parsedpriv, ppriverr := ParseOTSPrivateKey(otspriv.String())
-		if ppriverr != nil {
+		parsedPriv, pPrivErr := ParseOtsPrivateKey(otsPriv.String())
+		if pPrivErr != nil {
 			t.Errorf("failed to parse a private key when w = %d", w)
 		}
 
-		parsedpub, ppuberr := ParseOTSPublicKey(otspub.String())
-		if ppuberr != nil {
+		parsedPub, pPubErr := ParseOtsPublicKey(otsPub.String())
+		if pPubErr != nil {
 			t.Errorf("failed to parse a public key when w = %d", w)
 		}
 
-		if otspriv.otstypecode != parsedpriv.otstypecode ||
-			!bytes.Equal(otspriv.id, parsedpriv.id) ||
-			!bytes.Equal(otspriv.x, parsedpriv.x) ||
-			otspriv.q != parsedpriv.q {
+		if otsPriv.otsTypecode != parsedPriv.otsTypecode ||
+			!bytes.Equal(otsPriv.id, parsedPriv.id) ||
+			!bytes.Equal(otsPriv.x, parsedPriv.x) ||
+			otsPriv.q != parsedPriv.q {
 			t.Errorf("parsed private key != private key w = %d", w)
 		}
 
-		if otspub.otstypecode != parsedpub.otstypecode ||
-			!bytes.Equal(otspub.id, parsedpub.id) ||
-			!bytes.Equal(otspub.k, parsedpub.k) ||
-			otspub.q != parsedpub.q {
+		if otsPub.otsTypecode != parsedPub.otsTypecode ||
+			!bytes.Equal(otsPub.id, parsedPub.id) ||
+			!bytes.Equal(otsPub.k, parsedPub.k) ||
+			otsPub.q != parsedPub.q {
 			t.Errorf("parsed public key != public key w = %d", w)
 		}
 
 	}
 }
 
-func TestOTSSignandVerify(t *testing.T) {
-	// ws := []uint{LMOTSSHA256N32W1, LMOTSSHA256N32W2, LMOTSSHA256N32W4, LMOTSSHA256N32W8}
-	ws := []uint{LMOTSSHA256N32W1}
+func TestOtsSignAndVerify(t *testing.T) {
+	ws := []uint{LMOTS_SHA256_N32_W1, LMOTS_SHA256_N32_W2, LMOTS_SHA256_N32_W4, LMOTS_SHA256_N32_W8}
 	for _, w := range ws {
-		otspriv, _ := GenerateOTSPrivateKey(w)
-		otspub, _ := otspriv.Public()
+		otsPriv, _ := GenerateOtsPrivateKey(w)
+		otsPub, _ := otsPriv.Public()
 		files, _ := ioutil.ReadDir("testdata")
 		for _, fi := range files {
 			message, _ := ioutil.ReadFile(fi.Name())
-			otssign, otssignerr := otspriv.Sign(message)
-			if otssignerr != nil {
+			otsSig, otsSigErr := otsPriv.Sign(message)
+			if otsSigErr != nil {
 				t.Errorf("otssign error w = %d, file = %s", w, fi.Name())
 			}
-			verifyerr := otspub.Verify(message, otssign)
-			if verifyerr != nil {
+			verifyErr := otsPub.Verify(message, otsSig)
+			if verifyErr != nil {
 				t.Errorf("verify error w = %d, file = %s", w, fi.Name())
 			}
 		}

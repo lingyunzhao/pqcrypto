@@ -15,7 +15,7 @@ func Example() {
 	// *************************************** LM-OTS ***************************************
 
 	// generates an LM-OTS private key with the type LMOTSSHA256N32W1
-	lmotspriv, operr := GenerateOTSPrivateKey(LMOTSSHA256N32W1)
+	lmotspriv, operr := GenerateOtsPrivateKey(LMOTS_SHA256_N32_W1)
 	if operr != nil {
 		panic(operr)
 	}
@@ -36,7 +36,7 @@ func Example() {
 	// ***************************************  LMS  ****************************************
 
 	// generates an LMS private key with the types LMSSHA256M32H5 and LMOTSSHA256N32W1
-	lmspriv, lperr := GenerateLMSPrivateKey(LMSSHA256M32H5, LMOTSSHA256N32W1)
+	lmspriv, lperr := GenerateLmsPrivateKey(LMS_SHA256_M32_H5, LMOTS_SHA256_N32_W1)
 	if lperr != nil {
 		panic(lperr)
 	}
@@ -57,7 +57,7 @@ func Example() {
 	// ***************************************  HSS  ****************************************
 
 	// generates a 3-layer HSS private key with the types LMSSHA256M32H5 and LMOTSSHA256N32W1
-	hsspriv, hperr := GenerateHSSPrivateKey(LMSSHA256M32H5, LMOTSSHA256N32W1, 3)
+	hsspriv, hperr := GenerateHssPrivateKey(LMS_SHA256_M32_H5, LMOTS_SHA256_N32_W1, 3)
 	if hperr != nil {
 		panic(hperr)
 	}

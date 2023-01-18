@@ -10,59 +10,59 @@ import (
 	"fmt"
 )
 
-// A HSSPrivateKey represents an HSS private key.
-type HSSPrivateKey struct {
+// HSS private key.
+type HssPrivateKey struct {
 	layer   int
-	lmspriv []*LMSPrivateKey
-	lmspub  []*LMSPublicKey
-	lmssign [][]byte
+	lmsPriv []*LmsPrivateKey
+	lmsPub  []*LmsPublicKey
+	lmsSig  [][]byte
 }
 
-// A HSSPublicKey represents an HSS private key.
-type HSSPublicKey struct {
+// HSS private key.
+type HssPublicKey struct {
 	layer  int
-	lmspub *LMSPublicKey
+	lmsPub *LmsPublicKey
 }
 
-// GenerateHSSPrivateKey generates an HSS private key. The value of layer should satisfy 1 <= layer <= 8.
-func GenerateHSSPrivateKey(lmstypecode uint, otstypecode uint, layer int) (*HSSPrivateKey, error) {
+// Generates an HSS private key. The value of layer should satisfy 1 <= layer <= 8.
+func GenerateHssPrivateKey(lmsTypecode uint, otsTypecode uint, layer int) (*HssPrivateKey, error) {
 	if layer < 1 || layer > 8 {
 		return nil, errors.New("hss: layer should satisfy 1 <= layer <= 8")
 	}
 
-	hsspriv := new(HSSPrivateKey)
-	hsspriv.layer = layer
-	hsspriv.lmspriv = make([]*LMSPrivateKey, layer)
-	hsspriv.lmspub = make([]*LMSPublicKey, layer)
-	hsspriv.lmssign = make([][]byte, layer-1)
+	hssPriv := new(HssPrivateKey)
+	hssPriv.layer = layer
+	hssPriv.lmsPriv = make([]*LmsPrivateKey, layer)
+	hssPriv.lmsPub = make([]*LmsPublicKey, layer)
+	hssPriv.lmsSig = make([][]byte, layer-1)
 
 	for i := 0; i < layer; i++ {
-		hsspriv.lmspriv[i], _ = GenerateLMSPrivateKey(lmstypecode, otstypecode)
-		hsspriv.lmspub[i], _ = hsspriv.lmspriv[i].Public()
+		hssPriv.lmsPriv[i], _ = GenerateLmsPrivateKey(lmsTypecode, otsTypecode)
+		hssPriv.lmsPub[i], _ = hssPriv.lmsPriv[i].Public()
 	}
 
 	for i := 0; i < layer-1; i++ {
-		hsspriv.lmssign[i], _ = hsspriv.lmspriv[i].Sign(hsspriv.lmspub[i+1].serialize())
+		hssPriv.lmsSig[i], _ = hssPriv.lmsPriv[i].Sign(hssPriv.lmsPub[i+1].serialize())
 	}
 
-	return hsspriv, nil
+	return hssPriv, nil
 }
 
-// String serializes the private key and converts it to a hexadecimal string.
-func (hsspriv *HSSPrivateKey) String() string {
-	str := string(u32str(hsspriv.layer))
-	for i := 0; i < hsspriv.layer-1; i++ {
-		hsspriv.lmspriv[i].q--
-		str += string(hsspriv.lmspriv[i].serialize())
-		hsspriv.lmspriv[i].q++
+// Serializes the private key and converts it to a hexadecimal string.
+func (hssPriv *HssPrivateKey) String() string {
+	str := string(u32Str(hssPriv.layer))
+	for i := 0; i < hssPriv.layer-1; i++ {
+		hssPriv.lmsPriv[i].q--
+		str += string(hssPriv.lmsPriv[i].serialize())
+		hssPriv.lmsPriv[i].q++
 	}
-	str += string(hsspriv.lmspriv[hsspriv.layer-1].serialize())
+	str += string(hssPriv.lmsPriv[hssPriv.layer-1].serialize())
 	return fmt.Sprintf("%x", str)
 }
 
-// ParseHSSPrivateKey parses an HSS private key from a hexadecimal string.
-func ParseHSSPrivateKey(keyhex string) (*HSSPrivateKey, error) {
-	key, err := hex.DecodeString(keyhex)
+// Parses an HSS private key from a hexadecimal string.
+func ParseHssPrivateKey(keyHex string) (*HssPrivateKey, error) {
+	key, err := hex.DecodeString(keyHex)
 	if err != nil {
 		return nil, err
 	}
@@ -72,54 +72,54 @@ func ParseHSSPrivateKey(keyhex string) (*HSSPrivateKey, error) {
 	}
 
 	L := strTou32(key[:4])
-	lmsprivlen := 4 + 4 + 4 + identifierLENGTH + hashLENGTH
+	lmsPrivlen := 4 + 4 + 4 + IdentifierLength + HashLength
 
-	if len(key) != 4+lmsprivlen*L {
+	if len(key) != 4+lmsPrivlen*L {
 		return nil, errors.New("hss: (parse error) invalid HSS private key")
 	}
 
-	hsspriv := new(HSSPrivateKey)
-	hsspriv.layer = L
-	hsspriv.lmspriv = make([]*LMSPrivateKey, L)
-	hsspriv.lmspub = make([]*LMSPublicKey, L)
-	hsspriv.lmssign = make([][]byte, L-1)
+	hssPriv := new(HssPrivateKey)
+	hssPriv.layer = L
+	hssPriv.lmsPriv = make([]*LmsPrivateKey, L)
+	hssPriv.lmsPub = make([]*LmsPublicKey, L)
+	hssPriv.lmsSig = make([][]byte, L-1)
 
 	for i := 0; i < L; i++ {
-		lmspriv, err := parseLMSPrivateKey(key[4+lmsprivlen*i : 4+lmsprivlen*(i+1)])
+		lmsPriv, err := parseLmsPrivateKey(key[4+lmsPrivlen*i : 4+lmsPrivlen*(i+1)])
 		if err != nil {
 			return nil, errors.New("hss: (parse error) invalid HSS private key")
 		}
-		hsspriv.lmspriv[i] = lmspriv
+		hssPriv.lmsPriv[i] = lmsPriv
 	}
 
 	for i := 0; i < L; i++ {
-		hsspriv.lmspub[i], _ = hsspriv.lmspriv[i].Public()
+		hssPriv.lmsPub[i], _ = hssPriv.lmsPriv[i].Public()
 	}
 
 	for i := 0; i < L-1; i++ {
-		hsspriv.lmssign[i], _ = hsspriv.lmspriv[i].Sign(hsspriv.lmspub[i+1].serialize())
+		hssPriv.lmsSig[i], _ = hssPriv.lmsPriv[i].Sign(hssPriv.lmsPub[i+1].serialize())
 	}
 
-	return hsspriv, nil
+	return hssPriv, nil
 }
 
-// Public generates the HSS public key.
-func (hsspriv *HSSPrivateKey) Public() *HSSPublicKey {
-	hsspub := new(HSSPublicKey)
-	hsspub.layer = hsspriv.layer
-	hsspub.lmspub = hsspriv.lmspub[0]
-	return hsspub
+// Generates the HSS public key.
+func (hssPriv *HssPrivateKey) Public() *HssPublicKey {
+	hssPub := new(HssPublicKey)
+	hssPub.layer = hssPriv.layer
+	hssPub.lmsPub = hssPriv.lmsPub[0]
+	return hssPub
 }
 
-// String serializes the public key and converts it to a hexadecimal string.
-func (hsspub *HSSPublicKey) String() string {
-	str := string(u32str(hsspub.layer)) + string(hsspub.lmspub.serialize())
+// Serializes the public key and converts it to a hexadecimal string.
+func (hssPub *HssPublicKey) String() string {
+	str := string(u32Str(hssPub.layer)) + string(hssPub.lmsPub.serialize())
 	return fmt.Sprintf("%x", str)
 }
 
-// ParseHSSPublicKey parses an HSS public key from a hexadecimal string.
-func ParseHSSPublicKey(keyhex string) (*HSSPublicKey, error) {
-	key, err := hex.DecodeString(keyhex)
+// Parses an HSS public key from a hexadecimal string.
+func ParseHssPublicKey(keyHex string) (*HssPublicKey, error) {
+	key, err := hex.DecodeString(keyHex)
 	if err != nil {
 		return nil, err
 	}
@@ -129,106 +129,105 @@ func ParseHSSPublicKey(keyhex string) (*HSSPublicKey, error) {
 	}
 
 	L := strTou32(key[:4])
-	hsspub := new(HSSPublicKey)
-	hsspub.layer = L
-	hsspub.lmspub, err = parseLMSPublicKey(key[4:])
+	hssPub := new(HssPublicKey)
+	hssPub.layer = L
+	hssPub.lmsPub, err = parseLmsPublicKey(key[4:])
 	if err != nil {
 		return nil, errors.New("hss: (parse error) invalid HSS public key")
 	}
 
-	return hsspub, nil
+	return hssPub, nil
 }
 
-// Sign generates an HSS signature for a message and updates the private key.
-func (hsspriv *HSSPrivateKey) Sign(message []byte) ([]byte, error) {
-	if len(hsspriv.lmspriv) != hsspriv.layer ||
-		len(hsspriv.lmspub) != hsspriv.layer ||
-		len(hsspriv.lmssign) != hsspriv.layer-1 {
+// Generates an HSS signature for a message and updates the private key.
+func (hssPriv *HssPrivateKey) Sign(message []byte) ([]byte, error) {
+	if len(hssPriv.lmsPriv) != hssPriv.layer ||
+		len(hssPriv.lmsPub) != hssPriv.layer ||
+		len(hssPriv.lmsSig) != hssPriv.layer-1 {
 		return nil, errors.New("hss: invalid hss private key")
 	}
-	for hsspriv.lmspriv[len(hsspriv.lmspriv)-1].Validate() != nil {
-		if len(hsspriv.lmspriv) == 1 {
+	for hssPriv.lmsPriv[len(hssPriv.lmsPriv)-1].Validate() != nil {
+		if len(hssPriv.lmsPriv) == 1 {
 			return nil, errors.New("hss: attempted overuse of hss private key")
 		}
-		hsspriv.lmspriv = hsspriv.lmspriv[:len(hsspriv.lmspriv)-1]
-		hsspriv.lmspub = hsspriv.lmspub[:len(hsspriv.lmspub)-1]
-		hsspriv.lmssign = hsspriv.lmssign[:len(hsspriv.lmssign)-1]
+		hssPriv.lmsPriv = hssPriv.lmsPriv[:len(hssPriv.lmsPriv)-1]
+		hssPriv.lmsPub = hssPriv.lmsPub[:len(hssPriv.lmsPub)-1]
+		hssPriv.lmsSig = hssPriv.lmsSig[:len(hssPriv.lmsSig)-1]
 	}
-	for len(hsspriv.lmspriv) < hsspriv.layer {
-		lmspriv, _ := GenerateLMSPrivateKey(hsspriv.lmspriv[0].lmstypecode, hsspriv.lmspriv[0].otstypecode)
-		lmspub, _ := lmspriv.Public()
-		hsspriv.lmspriv = append(hsspriv.lmspriv, lmspriv)
-		hsspriv.lmspub = append(hsspriv.lmspub, lmspub)
-		lmssign, _ := hsspriv.lmspriv[len(hsspriv.lmspriv)-2].Sign(lmspub.serialize())
-		hsspriv.lmssign = append(hsspriv.lmssign, lmssign)
+	for len(hssPriv.lmsPriv) < hssPriv.layer {
+		lmsPriv, _ := GenerateLmsPrivateKey(hssPriv.lmsPriv[0].lmsTypecode, hssPriv.lmsPriv[0].otsTypecode)
+		lmsPub, _ := lmsPriv.Public()
+		hssPriv.lmsPriv = append(hssPriv.lmsPriv, lmsPriv)
+		hssPriv.lmsPub = append(hssPriv.lmsPub, lmsPub)
+		lmsSig, _ := hssPriv.lmsPriv[len(hssPriv.lmsPriv)-2].Sign(lmsPub.serialize())
+		hssPriv.lmsSig = append(hssPriv.lmsSig, lmsSig)
 	}
 
-	msign, err := hsspriv.lmspriv[len(hsspriv.lmspriv)-1].Sign(message)
+	mSig, err := hssPriv.lmsPriv[len(hssPriv.lmsPriv)-1].Sign(message)
 	if err != nil {
 		return nil, err
 	}
 
-	hsssign := make([]byte, 4)
-	copy(hsssign, u32str(hsspriv.layer-1))
+	hssSig := make([]byte, 4)
+	copy(hssSig, u32Str(hssPriv.layer-1))
 
-	for i := 0; i < hsspriv.layer-1; i++ {
-		hsssign = append(hsssign, hsspriv.lmssign[i]...)
-		hsssign = append(hsssign, hsspriv.lmspub[i+1].serialize()...)
+	for i := 0; i < hssPriv.layer-1; i++ {
+		hssSig = append(hssSig, hssPriv.lmsSig[i]...)
+		hssSig = append(hssSig, hssPriv.lmsPub[i+1].serialize()...)
 	}
 
-	hsssign = append(hsssign, msign...)
+	hssSig = append(hssSig, mSig...)
 
-	return hsssign, nil
+	return hssSig, nil
 }
 
-// Verify verifies a message with its HSS signature.
-func (hsspub *HSSPublicKey) Verify(message, hsssign []byte) error {
-	if len(hsssign) < 4 {
+// Verifies a message with its HSS signature.
+func (hssPub *HssPublicKey) Verify(message, hssSig []byte) error {
+	if len(hssSig) < 4 {
 		return errors.New("hss: invalid HSS signature")
 	}
 
-	L := strTou32(hsssign[:4]) + 1
-	if L != hsspub.layer {
+	L := strTou32(hssSig[:4]) + 1
+	if L != hssPub.layer {
 		return errors.New("hss: invalid HSS signature")
 	}
+	hssSig = hssSig[4:]
 
-	p := otstypes[hsspub.lmspub.otstypecode].p
-	n := otstypes[hsspub.lmspub.otstypecode].n
-	m := lmstypes[hsspub.lmspub.lmstypecode].m
-	h := lmstypes[hsspub.lmspub.lmstypecode].h
-	lmssignlen := 4 + (4 + n + n*p) + 4 + h*m
-	lmspublen := 4 + 4 + identifierLENGTH + m
-
-	if len(hsssign) != 4+lmssignlen*L+lmspublen*(L-1) {
-		return errors.New("hss: invalid HSS signature")
-	}
-
-	lmspub := make([]*LMSPublicKey, L)
-	lmssign := make([][]byte, L)
-
-	lmspub[0] = hsspub.lmspub
+	lmsPub := hssPub.lmsPub
 
 	for i := 0; i < L-1; i++ {
-		lmssign[i] = hsssign[4+(lmssignlen+lmspublen)*i : 4+(lmssignlen+lmspublen)*i+lmssignlen]
-		tmppub, err := parseLMSPublicKey(hsssign[4+(lmssignlen+lmspublen)*i+lmssignlen : 4+(lmssignlen+lmspublen)*(i+1)])
-		if err != nil {
+		p := otsTypes[lmsPub.otsTypecode].p
+		n := otsTypes[lmsPub.otsTypecode].n
+		m := lmsTypes[lmsPub.lmsTypecode].m
+		h := lmsTypes[lmsPub.lmsTypecode].h
+		lmsSiglen := 4 + (4 + n + n*p) + 4 + h*m
+		if len(hssSig) < lmsSiglen {
 			return errors.New("hss: invalid HSS signature")
 		}
-		lmspub[i+1] = tmppub
-	}
-
-	lmssign[L-1] = hsssign[len(hsssign)-lmssignlen:]
-
-	for i := 0; i < L-1; i++ {
-		err := lmspub[i].Verify(lmspub[i+1].serialize(), lmssign[i])
-		if err != nil {
+		lmsSig := hssSig[:lmsSiglen]
+		hssSig = hssSig[lmsSiglen:]
+		if len(hssSig) < 8 {
 			return errors.New("hss: invalid HSS signature")
+		}
+		nextLmsPubLen := 4 + 4 + IdentifierLength + lmsTypes[uint(strTou32(hssSig[:4]))].m
+		if len(hssSig) < nextLmsPubLen {
+			return errors.New("hss: invalid HSS signature")
+		}
+		nextLmsPub := hssSig[:nextLmsPubLen]
+		hssSig = hssSig[nextLmsPubLen:]
+		err := lmsPub.Verify(nextLmsPub, lmsSig)
+		if err != nil {
+			return errors.New("hss: invalid LMS signature")
+		}
+		lmsPub, err = parseLmsPublicKey(nextLmsPub)
+		if err != nil {
+			return errors.New("hss: invalid LMS public key")
 		}
 	}
 
-	err := lmspub[L-1].Verify(message, lmssign[L-1])
+	err := lmsPub.Verify(message, hssSig)
 	if err != nil {
-		return errors.New("hss: invalid HSS signature")
+		return errors.New("hss: invalid LMS signature")
 	}
 
 	return nil
